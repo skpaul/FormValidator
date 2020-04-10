@@ -126,7 +126,7 @@
         }
         #endregion
 
-        #region Normalize & Sanitize
+        #region Sanitize
 
         /**
          * sanitize()
@@ -134,10 +134,12 @@
          * It removes HTML & JavaScript tags, backslashes(\) and HTML special characters
          * 
          * @param bool $removeTags - whether remove tags or not
-         * @param bool $removeBackSlashes - whether remove backslashes or not
+         * @param bool $removeBackslash - whether remove backslashes or not
          * @param bool $convert - whether convert HTML special characters
+         * 
+         * @return this $this
          */
-        public function sanitize($removeTags = true, $removeBackSlashes = true, $convertHtmlSpecialChars = true){
+        public function sanitize($removeTags = true, $removeBackslash = true, $convertHtmlSpecialChars = true){
             if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
                 $valueToValidate = $this->valueToValidate;
 
@@ -145,8 +147,8 @@
                     $valueToValidate = $this->_strip_tags($valueToValidate, null);
                 }
     
-                if($removeBackSlashes){
-                    $valueToValidate = $this->_removeBackslashes($valueToValidate);
+                if($removeBackslash){
+                    $valueToValidate = $this->_removeBackslash($valueToValidate);
                 }
     
                 if($convertHtmlSpecialChars){
@@ -158,17 +160,29 @@
             return $this;
         }
 
-        //Strip HTML and PHP tags from a string. (PHP 4, PHP 5, PHP 7)
-        public function removeTags($allowable_tags = null){
-            $this->valueToValidate = $this->_strip_tags($this->valueToValidate, $allowable_tags); 
+        /**
+         * removeTags()
+         * 
+         * Remove HTML and PHP tags from a string.
+         * 
+         * You can use the optional parameter to specify tags which should not be removed. 
+         * These are either given as string, or as of PHP 7.4.0, as array.
+         * 
+         * @param mixed $allowableTags
+         * 
+         * @return this $this
+         */
+        public function removeTags($allowableTags = null){
+            $this->valueToValidate = $this->_strip_tags($this->valueToValidate, $allowableTags); 
             return $this;
         }
 
-        private function _strip_tags($valueToValidate, $allowable_tags){
+        //Called from removeTags() and sanitize()
+        private function _strip_tags($valueToValidate, $allowableTags){
             //strip_tags() - Strip HTML and PHP tags from a string
 
-            if(isset($allowable_tags) && !empty($allowable_tags)){
-                $valueToValidate = strip_tags($valueToValidate, $allowable_tags); 
+            if(isset($allowableTags) && !empty($allowableTags)){
+                $valueToValidate = strip_tags($valueToValidate, $allowableTags); 
             }
             else{
                 $valueToValidate = strip_tags($valueToValidate); 
@@ -177,21 +191,23 @@
             return $valueToValidate;
         }
 
-        /*
-            Remove the backslash.
-            The function stripslashes() will unescape characters that are escaped with a backslash, \.
-            This function removes backslashes in a string.
-            stripslashes("how\'s going on?") = how's going on?
-        */
-        public function removeBackslashes(){
+
+        /**
+         * removeBackslash()
+         * 
+         * Remove the backslash (\) from a string.
+         * Example: "how\'s going on?" = "how's going on?"
+         * 
+         */
+        public function removeBackslash(){
             //The following cascading variables used for making the debugging easy.
             $valueToValidate = $this->valueToValidate ;
-            $valueToValidate = $this->_removeBackslashes($valueToValidate); 
+            $valueToValidate = $this->_removeBackslash($valueToValidate); 
             $this->valueToValidate = $valueToValidate;
             return $this;
         }
 
-        private function _removeBackslashes($valueToValidate){
+        private function _removeBackslash($valueToValidate){
             /* 
                 Example 
                 $text="My dog don\\\\\\\\\\\\\\\\'t like the postman!";
