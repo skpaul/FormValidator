@@ -137,27 +137,25 @@
          * @param bool $removeBackSlashes - whether remove backslashes or not
          * @param bool $convert - whether convert HTML special characters
          */
-        public function sanitize($removeTags = true, $removeBackSlashes = true, $convert = true){
+        public function sanitize($removeTags = true, $removeBackSlashes = true, $convertHtmlSpecialChars = true){
             if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
-                $this->valueToValidate = $this->_sanitize($this->valueToValidate, $removeTags, $removeBackSlashes, $convert);
+                $valueToValidate = $this->valueToValidate;
+
+                if($removeTags){
+                    $valueToValidate = $this->_strip_tags($valueToValidate, null);
+                }
+    
+                if($removeBackSlashes){
+                    $valueToValidate = $this->_removeBackslashes($valueToValidate);
+                }
+    
+                if($convertHtmlSpecialChars){
+                    $valueToValidate = $this->_htmlspecialchars($valueToValidate);
+                }
+
+                $this->valueToValidate = $valueToValidate ;
             }
             return $this;
-        }
-
-        private function _sanitize($valueToValidate, $removeTags, $removeBackSlashes, $convert){
-            if($removeTags){
-                $valueToValidate = $this->_strip_tags($valueToValidate, null);
-            }
-
-            if($removeBackSlashes){
-                $valueToValidate = $this->_remove_slashes($valueToValidate);
-            }
-
-            if($convert){
-                $valueToValidate = $this->_htmlspecialchars($valueToValidate);
-            }
-
-            return $valueToValidate;
         }
 
         //Strip HTML and PHP tags from a string. (PHP 4, PHP 5, PHP 7)
@@ -179,7 +177,6 @@
             return $valueToValidate;
         }
 
-
         /*
             Remove the backslash.
             The function stripslashes() will unescape characters that are escaped with a backslash, \.
@@ -189,12 +186,12 @@
         public function removeBackslashes(){
             //The following cascading variables used for making the debugging easy.
             $valueToValidate = $this->valueToValidate ;
-            $valueToValidate = $this->_remove_slashes($valueToValidate); 
+            $valueToValidate = $this->_removeBackslashes($valueToValidate); 
             $this->valueToValidate = $valueToValidate;
             return $this;
         }
 
-        private function _remove_slashes($valueToValidate){
+        private function _removeBackslashes($valueToValidate){
             /* 
                 Example 
                 $text="My dog don\\\\\\\\\\\\\\\\'t like the postman!";
@@ -224,30 +221,57 @@
          * convert()
          * 
          * Convert special characters to HTML entities
+         * 
+         * @param bool $convertDoubleQuote - whether convert double quote
+         * @param bool $convertSingleQuote - whether convert single quote
          */
-        public function convert(){
+        public function convert($convertDoubleQuote, $convertSingleQuote){
+
+            $flag = ENT_QUOTES; //ENT_QUOTES	Will convert both double and single quotes.
+
+            if($convertDoubleQuote && !$convertSingleQuote){
+                $flag = ENT_COMPAT;
+            }
+            elseif(!$convertDoubleQuote && !$convertSingleQuote){
+                $flag = ENT_NOQUOTES;
+            }
+            else{
+                $flag = ENT_QUOTES;
+            }
+
             /*
                 ENT_COMPAT	Will convert double-quotes and leave single-quotes alone.
                 ENT_QUOTES	Will convert both double and single quotes.
                 ENT_NOQUOTES	Will leave both double and single quotes unconverted.
             */
-            $this->_htmlspecialchars($this->value, ENT_QUOTES);  // Converts both double and single quotes
+
+            $valueToValidate = $this->valueToValidate;
+            $valueToValidate = $this->_htmlspecialchars($valueToValidate, $flag);  // Converts both double and single quotes
+            $this->valueToValidate = $valueToValidate ;
+            
             return $this;
         }
 
         //If you use this method,
-        // you should use 'htmlspecialchars_decode()' to show back the data.
-        private function _htmlspecialchars($valueToValidate){
+        //you should use 'htmlspecialchars_decode()' to show back the data.
+        private function _htmlspecialchars($valueToValidate, $flag = ENT_QUOTES){
 
             //htmlentities() vs. htmlspecialchars()
             //https://stackoverflow.com/questions/46483/htmlentities-vs-htmlspecialchars
+
+            //However, if you also have additional characters that are Unicode or uncommon symbols in your text then you should use htmlentities() to ensure they show up properly in your HTML page.
 
             /*
                 ENT_COMPAT	Will convert double-quotes and leave single-quotes alone.
                 ENT_QUOTES	Will convert both double and single quotes.
                 ENT_NOQUOTES	Will leave both double and single quotes unconverted.
             */
-            $valueToValidate = htmlspecialchars($this->valueToValidate, ENT_QUOTES);  // Converts both double and single quotes
+            $valueToValidate = htmlspecialchars($valueToValidate, $flag); 
+
+            //There is a bug, therefore use that function twice
+            $valueToValidate = htmlspecialchars($valueToValidate, $flag); 
+
+            return $valueToValidate;
         }
 
        
