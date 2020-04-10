@@ -26,10 +26,6 @@
             $this->character_or_digit = "";
         }
        
-
-     
-        
-
         //This must be the first method call.
         public function config($title, $defalt_value = null){
             $this->title = trim($title);
@@ -103,6 +99,8 @@
         }
         #endregion
 
+        #region Normalize & Sanitize
+
 
 
         //Strip HTML and PHP tags from a string. (PHP 4, PHP 5, PHP 7)
@@ -110,6 +108,16 @@
             $this->_strip_tags($allowable_tags); 
             return $this;
         }
+
+        private function _strip_tags($allowable_tags){
+            if(isset($allowable_tags) && !empty($allowable_tags)){
+                $this->valueToValidate = strip_tags($this->valueToValidate, $allowable_tags); 
+            }
+            else{
+                $this->valueToValidate = strip_tags($this->valueToValidate); 
+            }
+        }
+
 
         /*
             Remove the backslash.
@@ -120,6 +128,20 @@
         public function removeBackslashes(){
             $this->_remove_slashes(); 
             return $this;
+        }
+
+        private function _remove_slashes(){
+            /* 
+                Example 
+
+                $text="My dog don\\\\\\\\\\\\\\\\'t like the postman!";
+                echo removeslashes($text);
+
+                RESULT: My dog don't like the postman!
+            */
+
+            $temp = implode("", explode("\\", $this->valueToValidate));
+            $this->valueToValidate = stripslashes(trim($temp));
         }
 
         /*
@@ -143,6 +165,16 @@
             */
             $this->_htmlspecialchars($this->value, ENT_QUOTES);  // Converts both double and single quotes
             return $this;
+        }
+
+        
+        private function _htmlspecialchars(){
+            /*
+                ENT_COMPAT	Will convert double-quotes and leave single-quotes alone.
+                ENT_QUOTES	Will convert both double and single quotes.
+                ENT_NOQUOTES	Will leave both double and single quotes unconverted.
+            */
+            $this->valueToValidate = htmlspecialchars($this->valueToValidate, ENT_QUOTES);  // Converts both double and single quotes
         }
 
         private function _normalize($RemoveTags, $RemoveBackSlashes, $Convert){
@@ -173,6 +205,12 @@
             return $this;
         }
 
+        #endregion
+
+        #region Required or Optional
+
+
+
         /**
          * @return $this
          * @throws FormValidationException
@@ -189,6 +227,11 @@
             $this->required = false;
             return $this;
         }
+
+
+        #endregion
+
+        #region Check for data type
 
         /**
          * Check for alphabet character(s)
@@ -453,6 +496,11 @@
             return $date;
         }
 
+
+        #endregion
+        
+        #region Length checking
+
         public function equalLength($equal_length){
             if(!empty($this->valueToValidate)){
                 $length = strlen($this->valueToValidate);
@@ -462,7 +510,7 @@
                     throw new FormValidationException($msg);
                 }
             }
-           
+        
             return $this;
         }
 
@@ -490,6 +538,10 @@
             return $this;
         }
 
+
+       #endregion
+       
+        #region Range checking
         //If datatype is date, then convert into date using ConvertStringToDate() before passing as arguement.
         public function minValue($minimum_value){   
             if(!empty($this->valueToValidate)){
@@ -514,6 +566,9 @@
             }
             return $this;
         }
+        #endregion
+
+
 
         private function _starts_with($string, $startString){ 
             $len = strlen($startString); 
@@ -586,38 +641,6 @@
            }
         }
 
-
-        private function _strip_tags($allowable_tags){
-            if(isset($allowable_tags) && !empty($allowable_tags)){
-                $this->valueToValidate = strip_tags($this->valueToValidate, $allowable_tags); 
-            }
-            else{
-                $this->valueToValidate = strip_tags($this->valueToValidate); 
-            }
-        }
- 
-        private function _remove_slashes(){
-            /* 
-                Example 
-
-                $text="My dog don\\\\\\\\\\\\\\\\'t like the postman!";
-                echo removeslashes($text);
-
-                RESULT: My dog don't like the postman!
-            */
-
-            $temp = implode("", explode("\\", $this->valueToValidate));
-            $this->valueToValidate = stripslashes(trim($temp));
-        }
-
-        private function _htmlspecialchars(){
-            /*
-                ENT_COMPAT	Will convert double-quotes and leave single-quotes alone.
-                ENT_QUOTES	Will convert both double and single quotes.
-                ENT_NOQUOTES	Will leave both double and single quotes unconverted.
-            */
-            $this->valueToValidate = htmlspecialchars($this->valueToValidate, ENT_QUOTES);  // Converts both double and single quotes
-        }
 
     } //<--class
 
