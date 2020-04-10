@@ -1,5 +1,7 @@
-# FormValidator
+# FormValidator (Beta)
 Validate HTTP Post in PHP backend.
+
+
 
 ## What it does?
 
@@ -12,6 +14,59 @@ Validate HTTP Post in PHP backend.
 7. Checks whether length is valid i.e. maximum 10 characters
 8. If any validation fails, throws `FormValidationException`
 9. If everything is fine, returns the value.
+
+
+
+## First thing is first
+
+It has mainly three parts
+
+				1.  Input Value & Metadata: Takes input from the outside world and few information about the value.
+   				2.  Sanitizing                         :  Make the data clean and safe for further processing.
+   				3.  Validation                         : Performs various types of validation.
+
+Let's see those one by one -
+
+
+
+#### Validating Value & Metadata
+
+```php
+require_once("FormValidator.php");
+$fv = new FormValidator();
+```
+
+It's pretty simple-
+
+```php
+$fv->value($value);
+```
+
+You can also take parameter directly from HTTP GET/POST - 
+
+```php
+$fv->httpGet($fieldName);  //HTTP GET
+$fv->httpPost($fieldName); //HTTP POST
+```
+
+You can mark the HTTP GET/POST field as required or optional - 
+
+```php
+$fv->httpPost("student_name"); //default is required = true.
+
+//make it optional
+$fv->httpPost("student_name", false); //now it is optional.
+```
+
+if you mark the field as required, then that field must be present in the **$_POST** or **$_GET** array.  Otherwise, you'll get a **FormValidationException**.
+
+```html
+<form>
+  <input name="student_name" type="text">
+</form>
+```
+
+
 
 
 
