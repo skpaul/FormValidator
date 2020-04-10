@@ -4,7 +4,7 @@ Validate HTTP Post in PHP backend.
 ## What it does?
 
 1. It takes a value
-2. Sanitizes (make it clean and safe) the data by removing html & JavaScript tags, backslashes and HTML special characters. Configurable.
+2. Sanitizes (make it clean and safe) the data i.e. removes HTML & JavaScript tags, backslashes and HTML special characters.
 3. Checks whether a value is required or optional
 4. Checks whether datatype is valid i.e. integer or date
 5. Checks whether data format is valid i.e. yyyy-mm-dd or dd-mm-yyyy
@@ -12,4 +12,14 @@ Validate HTTP Post in PHP backend.
 7. Checks whether length is valid i.e. maximum 10 characters
 8. If any validation fails, throws `FormValidationException`
 9. If everything is fine, returns the value.
+
+
+
+###### required() and optional()
+
+you can use **required()** before **sanitize()** or after or both.
+
+```php
+$form->value("abc")->required()->sanitize()->required()->validate();
+```
 

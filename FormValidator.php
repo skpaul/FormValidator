@@ -374,7 +374,6 @@
             
             return $this;
         }
-
         
         /**
          * asNumeric()
@@ -581,13 +580,31 @@
             throw new FormValidationException("{$this->label} invalid.");
         }
 
-        public function asDate(){
+        /**
+         * asDate()
+         * 
+         * Checks whether the value is a valid date/datetime
+         * Convert the value as datetime object.
+         * 
+         * @param string $datetimeZone Default is "Asia/Dhaka".
+         * @throws FormatValidationException if the value is invalid.
+         * 
+         * @return this $this
+         */
+        public function asDate($datetimeZone = "Asia/Dhaka"){
             if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
-                if(!$this->_is_date_valid($this->valueToValidate)){
-                    $msg = "{$this->label} is invalid. It must be a valid date in dd-mm-yyyy format.";
-                    throw new FormValidationException($msg);
+                try {
+                    $valueToValidate = $this->valueToValidate; //make it debug-friendly with xdebug.
+                    $valueToValidate = new Datetime($valueToValidate, new DatetimeZone($datetimeZone));
+                    $this->valueToValidate = $valueToValidate;
+                } catch (Exception $exp) {
+                    throw new FormValidationException("Invalid date.");
                 }
-                $this->valueToValidate =$this->_convert_string_to_date($this->valueToValidate);
+                // if(!$this->_is_date_valid($this->valueToValidate)){
+                //     $msg = "{$this->label} is invalid. It must be a valid date in dd-mm-yyyy format.";
+                //     throw new FormValidationException($msg);
+                // }
+                // $this->valueToValidate =$this->_convert_string_to_date($this->valueToValidate);
             }
             return $this;
         }
@@ -625,12 +642,21 @@
         
         #region Length checking
 
-        public function equalLength($equal_length){
+        /**
+         * equalLength()
+         * 
+         * Checks whether the value has the specified length.
+         * 
+         * @param int $length
+         * @return this $this
+         * @throws FormValidationException
+         */
+        public function equalLength($length){
             if(!empty($this->valueToValidate)){
-                $length = strlen($this->valueToValidate);
+                $_length = strlen($this->valueToValidate);
                 $label = $this->label;
-                if($length != $equal_length){
-                    $msg = "$label invalid. $equal_length  $this->character_or_digit required. Found $length  $this->character_or_digit.";
+                if($_length != $length){
+                    $msg = "$label invalid. $length  $this->character_or_digit required. Found $_length  $this->character_or_digit.";
                     throw new FormValidationException($msg);
                 }
             }
@@ -638,24 +664,42 @@
             return $this;
         }
 
-        public function minLength($minimum_length){
+        /**
+         * minLength()
+         * 
+         * Checks whether the value has the minimum specified length.
+         * 
+         * @param int $length
+         * @return this $this
+         * @throws FormValidationException
+         */
+        public function minLength($length){
             if(!empty($this->valueToValidate)){
-                $length = strlen($this->valueToValidate);
+                $_length = strlen($this->valueToValidate);
                 $label = $this->label;
-                if($length < $minimum_length){
-                    $msg = "{$label} Invalid. Minimum {$minimum_length} {$this->character_or_digit} required. Found $length $this->character_or_digit.";
+                if($_length < $length){
+                    $msg = "{$label} Invalid. Minimum {$length} {$this->character_or_digit} required. Found $_length $this->character_or_digit.";
                     throw new FormValidationException($msg);
                 }
             }
             return $this;
         }
 
-        public function maxLength($maximum_length){
+        /**
+         * maxLength()
+         * 
+         * Checks whether the value has the maximum specified length.
+         * 
+         * @param int $length
+         * @return this $this
+         * @throws FormValidationException
+         */
+        public function maxLength($length){
             if(!empty($this->valueToValidate)){
-                $length = strlen($this->valueToValidate);
+                $_length = strlen($this->valueToValidate);
                 $label = $this->label;
-                if($length > $maximum_length){
-                    $msg = "Invalid {$label}. Maximum {$maximum_length} $this->character_or_digit allowed. Found $length $this->character_or_digit.";
+                if($_length > $length){
+                    $msg = "Invalid {$label}. Maximum {$length} $this->character_or_digit allowed. Found $_length $this->character_or_digit.";
                     throw new FormValidationException($msg);
                 }
             }
@@ -666,12 +710,23 @@
        #endregion
        
         #region Range checking
-        //If datatype is date, then convert into date using ConvertStringToDate() before passing as arguement.
-        public function minValue($minimum_value){   
+    
+        
+        /**
+         * minValue()
+         * 
+         * Checks whether the value has the minimum specified value.
+         * If datatype is date, then convert into date before passing as arguement.
+         * 
+         * @param int $minimumValue
+         * @return this $this
+         * @throws FormValidationException
+         */
+        public function minValue($minimumValue){   
             if(!empty($this->valueToValidate)){
                 $label = $this->label;
-                if($this->valueToValidate < $minimum_value){
-                    $msg = "$label must be equal to or greater than $minimum_value.";
+                if($this->valueToValidate < $minimumValue){
+                    $msg = "$label must be equal to or greater than $minimumValue.";
                     throw new FormValidationException($msg);
                 }
             }
@@ -679,12 +734,21 @@
             return $this;
         }
      
-        //If datatype is date, then convert into date using ConvertStringToDate() before passing as arguement.
-        public function maxValue($maximum_value){ 
+        /**
+         * maxValue()
+         * 
+         * Checks whether the value has the minimum specified value.
+         * If datatype is date, then convert into date before passing as arguement.
+         * 
+         * @param int $minimumValue
+         * @return this $this
+         * @throws FormValidationException
+         */
+        public function maxValue($maximumValue){ 
             if(!empty($this->valueToValidate)){
                 $label = $this->label;
-                if($this->valueToValidate > $maximum_value){
-                    $msg = "$label must be equal to or less than $maximum_value.";
+                if($this->valueToValidate > $maximumValue){
+                    $msg = "$label must be equal to or less than $maximumValue.";
                     throw new FormValidationException($msg);
                 }
             }
@@ -692,7 +756,15 @@
         }
         #endregion
 
-
+        public function startsWith($startString){ 
+            $string = $this->valueToValidate;
+            $label = $this->label;
+            if(!$this->_starts_with($string,$startString)){
+                $msg = "$label must starts with $startString.";
+                throw new FormValidationException($msg);
+            }
+            return $this;
+        } 
 
         private function _starts_with($string, $startString){ 
             $len = strlen($startString); 
@@ -702,11 +774,10 @@
             return (substr($string, 0, $len) === $startString); 
         } 
         
-        public function startsWith($startString){ 
+        function endsWith($endString){ 
             $string = $this->valueToValidate;
-            $label = $this->label;
-            if(!$this->_starts_with($string,$startString)){
-                $msg = "$label must starts with $startString.";
+            if(!$this->_ends_with($string, $endString)){
+                $msg = "$this->label must ends with $endString.";
                 throw new FormValidationException($msg);
             }
             return $this;
@@ -720,18 +791,12 @@
             return (substr($string, -$len) === $endString); 
         } 
 
-        function endsWith($endString){ 
-            $string = $this->valueToValidate;
-            if(!$this->_ends_with($string, $endString)){
-                $msg = "$this->label must ends with $endString.";
-                throw new FormValidationException($msg);
-            }
-            return $this;
-        } 
-
-
         /**
-         * @return validated value or default value.
+         * validate()
+         * 
+         * This must be the final call.
+         * 
+         * @return mix $valueToValidate Value or default value.
          */
         public function validate(){
             if(!isset($this->valueToValidate) || empty($this->valueToValidate)){
