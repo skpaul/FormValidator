@@ -6,10 +6,24 @@
     }
 
     class FormValidator{
-        private $title = "";
-        private $default_value;
+        private $label = "";
+
+        /**
+         * Here we keep the value we going to be validated.
+         *
+         * @var mix $valueToValidate
+         */
+        private $valueToValidate = null;
+
+        /**
+         * Here we keep the default value of the data.
+         *
+         * @var mix $defaltValue
+         */
+        private $defaltValue;
+
         private $required = false;
-        private $data_value = null;
+        
         private $character_or_digit = "";
 
         #region construct and destruct
@@ -18,40 +32,49 @@
         public function __destruct(){}
         #endregion
 
+        
+        
         private function _reset_private_variables(){
-            $this->title = "";
-            unset($this->default_value);
+            $this->label = "";
+            unset($this->defaultValue);
             $this->required = false;
             unset($this->valueToValidate);
             $this->character_or_digit = "";
         }
-       
-        //This must be the first method call.
-        public function config($title, $defalt_value = null){
-            $this->title = trim($title);
-            $this->default_value = $defalt_value;
-            return $this;
-        }
 
-        public function title($title){
-            $this->title = trim($title);
-            return $this;
-        }
+
 
         /**
-         * setDefault()
+         * default()
          * 
          * If the user input is optional, this method is required to set data for database table.
          * If the user input is mandatory, no need to use this method.
          * 
          * @return this. 
          */
-        public function setDefault($defalt_value){
-            $this->default_value = $defalt_value;
+        public function default($defaltValue){
+            $this->defaultValue = $defaltValue;
             return $this;
         }
 
         #region Receive value to validate
+
+        /**
+         * Sets the description of the value.
+         * Similar to HTML <label></label> tag.
+         * 
+         * Example- 'Customer Name' or 'Date of Birth'
+         *        
+         * It is required to compose a meaningful message if validation fails.
+         *
+         * @param string $label
+         *
+         * @return this
+         */
+        public function label($label){
+            $this->label = trim($label);
+            return $this;
+        }
 
         //Receive value manually
         public function value($value){
@@ -63,7 +86,7 @@
         public function httpPost($httpPostFieldName, $isRequiredField=true){
             if($isRequiredField){
                 if(!isset($_POST[$httpPostFieldName])){
-                    throw new FormValidationException("{$this->title} required.");
+                    throw new FormValidationException("{$this->label} required.");
                 }
                
                 $this->valueToValidate = trim($_POST[$httpPostFieldName]);
@@ -83,7 +106,7 @@
         public function httpGet($httpGetFieldName, $isRequiredField=true){
             if($isRequiredField){
                 if(!isset($_GET[$httpGetFieldName])){
-                    throw new FormValidationException("{$this->title} required.");
+                    throw new FormValidationException("{$this->label} required.");
                 }
                
                 $this->valueToValidate = trim($_GET[$httpGetFieldName]);
@@ -218,7 +241,7 @@
         public function required(){
             $this->required = true;
             if(!isset($this->valueToValidate) || empty($this->valueToValidate)){
-                throw new FormValidationException("{$this->title} required.");
+                throw new FormValidationException("{$this->label} required.");
             }
             return $this;
         }
@@ -251,7 +274,7 @@
                 }
 
                 if(!ctype_alpha($temp)){
-                    throw new FormValidationException("{$this->title} must be alphabetic.");
+                    throw new FormValidationException("{$this->label} must be alphabetic.");
                 }
             }
             return $this;
@@ -275,7 +298,7 @@
                 }
 
                 if(!ctype_alnum($temp)){
-                    throw new FormValidationException("{$this->title} must be a-z/A-Z and/or 0-9.");
+                    throw new FormValidationException("{$this->label} must be a-z/A-Z and/or 0-9.");
                 }
             }
             
@@ -291,7 +314,7 @@
             $this->character_or_digit = "digits";
             if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
                 if(!is_numeric($this->valueToValidate)){
-                    throw new FormValidationException("{$this->title} must be numeric.");
+                    throw new FormValidationException("{$this->label} must be numeric.");
                 }
             }
             
@@ -307,15 +330,15 @@
             $this->character_or_digit = "digits";
             if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
                 if(!is_numeric($this->valueToValidate)){
-                    throw new FormValidationException("{$this->title} must be numeric.");
+                    throw new FormValidationException("{$this->label} must be numeric.");
                 }
 
                 if($this->valueToValidate > PHP_INT_MAX ){
-                    throw new FormValidationException("{$this->title} must be less than or equal to " . PHP_INT_MAX . ".");
+                    throw new FormValidationException("{$this->label} must be less than or equal to " . PHP_INT_MAX . ".");
                 }
 
                 if(!is_int(intval($this->valueToValidate))){
-                    throw new FormValidationException("{$this->title} invalid.");
+                    throw new FormValidationException("{$this->label} invalid.");
                 }
 
                 $this->valueToValidate = intval($this->valueToValidate);
@@ -347,19 +370,19 @@
                         }
                     */
                     if(!is_numeric($this->valueToValidate)){
-                        throw new FormValidationException("{$this->title} must be numeric.");
+                        throw new FormValidationException("{$this->label} must be numeric.");
                     }
 
                     // if(!is_float(floatval($this->valueToValidate))){
-                    //     throw new FormValidationException("{$this->title} must be numeric.");
+                    //     throw new FormValidationException("{$this->label} must be numeric.");
                     // }
                 }
                 else{
                     if(!is_numeric($this->valueToValidate)){
-                        throw new FormValidationException("{$this->title} must be numeric.");
+                        throw new FormValidationException("{$this->label} must be numeric.");
                     }
                     // if(!is_int(intval($this->valueToValidate))){
-                    //     throw new FormValidationException("{$this->title} must be numeric.");
+                    //     throw new FormValidationException("{$this->label} must be numeric.");
                     // }
                 }
 
@@ -370,9 +393,9 @@
         
         public function asEmail(){
             if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
-                $title = $this->title;
+                $label = $this->label;
                 if (!filter_var($this->valueToValidate, FILTER_VALIDATE_EMAIL)) {
-                    throw new FormValidationException("{$this->title} invalid.");
+                    throw new FormValidationException("{$this->label} invalid.");
                 }
             }
             return $this;
@@ -387,15 +410,15 @@
             $MobileNumber = $this->valueToValidate;
            
             if(empty($MobileNumber)){
-                throw new FormValidationException("{$this->title} invalid.");
+                throw new FormValidationException("{$this->label} invalid.");
             }
         
             if(!is_numeric($MobileNumber)){
-                throw new FormValidationException("{$this->title} invalid.");
+                throw new FormValidationException("{$this->label} invalid.");
             }
         
             if(strlen($MobileNumber)<10){
-                throw new FormValidationException("{$this->title} invalid.");
+                throw new FormValidationException("{$this->label} invalid.");
             }
         
             $OperatorCodes = array( "013", "014", "015", "016", "017", "018", "019" );
@@ -403,14 +426,14 @@
             if($this->_starts_with($MobileNumber,"1")){
                 //if the number is 1711781878, it's length must be 10 digits        
                 if(strlen($MobileNumber) != 10){
-                    throw new FormValidationException("{$this->title} invalid.");
+                    throw new FormValidationException("{$this->label} invalid.");
                 }
         
                 $firstTwoDigits = substr($MobileNumber, 0, 2); //returns 17, 18 etc,
                 $operatorCode = "0" . $firstTwoDigits; //Making first two digits a valid operator code with adding 0.
         
                 if (!in_array($operatorCode, $OperatorCodes)) {
-                    throw new FormValidationException("{$this->title} invalid.");
+                    throw new FormValidationException("{$this->label} invalid.");
                 }
         
                 $finalNumberString = "880" . $MobileNumber;
@@ -422,13 +445,13 @@
             if($this->_starts_with($MobileNumber,"01")){
                 //if the number is 01711781878, it's length must be 11 digits        
                 if(strlen($MobileNumber) != 11){
-                    throw new FormValidationException("{$this->title} invalid.");
+                    throw new FormValidationException("{$this->label} invalid.");
                 }
         
                 $operatorCode = substr($MobileNumber, 0, 3); //returns 017, 018 etc,
                 
                 if (!in_array($operatorCode, $OperatorCodes)) {
-                    throw new FormValidationException("{$this->title} invalid.");
+                    throw new FormValidationException("{$this->label} invalid.");
                 }
         
                 $finalNumberString = "88" . $MobileNumber;
@@ -439,7 +462,7 @@
             if($this->_starts_with($MobileNumber,"8801")){
                 //if the number is 8801711781878, it's length must be 13 digits    
                 if(strlen($MobileNumber) != 13){
-                    throw new FormValidationException("{$this->title} invalid.");
+                    throw new FormValidationException("{$this->label} invalid.");
                 }
         
                 $operatorCode = substr($MobileNumber, 2, 3); //returns 017, 018 etc,
@@ -454,13 +477,13 @@
                 return $this;
             }
            
-            throw new FormValidationException("{$this->title} invalid.");
+            throw new FormValidationException("{$this->label} invalid.");
         }
 
         public function asDate(){
             if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
                 if(!$this->_is_date_valid($this->valueToValidate)){
-                    $msg = "{$this->title} is invalid. It must be a valid date in dd-mm-yyyy format.";
+                    $msg = "{$this->label} is invalid. It must be a valid date in dd-mm-yyyy format.";
                     throw new FormValidationException($msg);
                 }
                 $this->valueToValidate =$this->_convert_string_to_date($this->valueToValidate);
@@ -504,9 +527,9 @@
         public function equalLength($equal_length){
             if(!empty($this->valueToValidate)){
                 $length = strlen($this->valueToValidate);
-                $title = $this->title;
+                $label = $this->label;
                 if($length != $equal_length){
-                    $msg = "$title invalid. $equal_length  $this->character_or_digit required. Found $length  $this->character_or_digit.";
+                    $msg = "$label invalid. $equal_length  $this->character_or_digit required. Found $length  $this->character_or_digit.";
                     throw new FormValidationException($msg);
                 }
             }
@@ -517,9 +540,9 @@
         public function minLength($minimum_length){
             if(!empty($this->valueToValidate)){
                 $length = strlen($this->valueToValidate);
-                $title = $this->title;
+                $label = $this->label;
                 if($length < $minimum_length){
-                    $msg = "{$title} Invalid. Minimum {$minimum_length} {$this->character_or_digit} required. Found $length $this->character_or_digit.";
+                    $msg = "{$label} Invalid. Minimum {$minimum_length} {$this->character_or_digit} required. Found $length $this->character_or_digit.";
                     throw new FormValidationException($msg);
                 }
             }
@@ -529,9 +552,9 @@
         public function maxLength($maximum_length){
             if(!empty($this->valueToValidate)){
                 $length = strlen($this->valueToValidate);
-                $title = $this->title;
+                $label = $this->label;
                 if($length > $maximum_length){
-                    $msg = "Invalid {$title}. Maximum {$maximum_length} $this->character_or_digit allowed. Found $length $this->character_or_digit.";
+                    $msg = "Invalid {$label}. Maximum {$maximum_length} $this->character_or_digit allowed. Found $length $this->character_or_digit.";
                     throw new FormValidationException($msg);
                 }
             }
@@ -545,9 +568,9 @@
         //If datatype is date, then convert into date using ConvertStringToDate() before passing as arguement.
         public function minValue($minimum_value){   
             if(!empty($this->valueToValidate)){
-                $title = $this->title;
+                $label = $this->label;
                 if($this->valueToValidate < $minimum_value){
-                    $msg = "$title must be equal to or greater than $minimum_value.";
+                    $msg = "$label must be equal to or greater than $minimum_value.";
                     throw new FormValidationException($msg);
                 }
             }
@@ -558,9 +581,9 @@
         //If datatype is date, then convert into date using ConvertStringToDate() before passing as arguement.
         public function maxValue($maximum_value){ 
             if(!empty($this->valueToValidate)){
-                $title = $this->title;
+                $label = $this->label;
                 if($this->valueToValidate > $maximum_value){
-                    $msg = "$title must be equal to or less than $maximum_value.";
+                    $msg = "$label must be equal to or less than $maximum_value.";
                     throw new FormValidationException($msg);
                 }
             }
@@ -580,9 +603,9 @@
         
         public function startsWith($startString){ 
             $string = $this->valueToValidate;
-            $title = $this->title;
+            $label = $this->label;
             if(!$this->_starts_with($string,$startString)){
-                $msg = "$title must starts with $startString.";
+                $msg = "$label must starts with $startString.";
                 throw new FormValidationException($msg);
             }
             return $this;
@@ -599,7 +622,7 @@
         function endsWith($endString){ 
             $string = $this->valueToValidate;
             if(!$this->_ends_with($string, $endString)){
-                $msg = "$this->title must ends with $endString.";
+                $msg = "$this->label must ends with $endString.";
                 throw new FormValidationException($msg);
             }
             return $this;
@@ -611,7 +634,7 @@
          */
         public function validate(){
             if(!isset($this->valueToValidate) || empty($this->valueToValidate)){
-                $this->valueToValidate = $this->default_value;
+                $this->valueToValidate = $this->defaultValue;
             }
           
             $temp = $this->valueToValidate;
