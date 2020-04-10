@@ -24,6 +24,13 @@
 
         private $required = false;
         
+        /**
+         * @var string $character_or_digit
+         * 
+         * It's value can be either "digits" or "characters".
+         * 
+         * This variable is required to compose a meaningful message while throwing FormValidationException.
+         */
         private $character_or_digit = "";
 
         #region construct and destruct
@@ -33,17 +40,6 @@
         #endregion
 
         
-        
-        private function _reset_private_variables(){
-            $this->label = "";
-            unset($this->defaultValue);
-            $this->required = false;
-            unset($this->valueToValidate);
-            $this->character_or_digit = "";
-        }
-
-
-
 
 
         #region Receive value to validate
@@ -152,7 +148,7 @@
                 }
     
                 if($convertHtmlSpecialChars){
-                    $valueToValidate = $this->_htmlspecialchars($valueToValidate);
+                    $valueToValidate = $this->_convert($valueToValidate);
                 }
 
                 $this->valueToValidate = $valueToValidate ;
@@ -191,7 +187,6 @@
             return $valueToValidate;
         }
 
-
         /**
          * removeBackslash()
          * 
@@ -220,23 +215,12 @@
             return $valueToValidate;
         }
 
-        /*
-            htmlentities — Convert all applicable characters to HTML entities.
-            htmlspecialchars — Convert special characters to HTML entities.
-            Source- https://stackoverflow.com/questions/46483/htmlentities-vs-htmlspecialchars/3614344
-        */
-        
-        /*
-            Convert special characters to HTML entities
-            --------------------------example ----------------------------
-            $new = htmlspecialchars("<a href='test'>Test</a>", ENT_QUOTES);
-            echo $new; // &lt;a href=&#039;test&#039;&gt;Test&lt;/a&gt;
-            ---------------------------------------------------------------
-        */
         /**
          * convert()
          * 
          * Convert special characters to HTML entities
+         * 
+         * Example: htmlspecialchars("<br> Here") = &lt;br&gt; Here
          * 
          * @param bool $convertDoubleQuote - whether convert double quote
          * @param bool $convertSingleQuote - whether convert single quote
@@ -262,7 +246,7 @@
             */
 
             $valueToValidate = $this->valueToValidate;
-            $valueToValidate = $this->_htmlspecialchars($valueToValidate, $flag);  // Converts both double and single quotes
+            $valueToValidate = $this->_convert($valueToValidate, $flag);  // Converts both double and single quotes
             $this->valueToValidate = $valueToValidate ;
             
             return $this;
@@ -270,10 +254,13 @@
 
         //If you use this method,
         //you should use 'htmlspecialchars_decode()' to show back the data.
-        private function _htmlspecialchars($valueToValidate, $flag = ENT_QUOTES){
+        private function _convert($valueToValidate, $flag = ENT_QUOTES){
 
-            //htmlentities() vs. htmlspecialchars()
-            //https://stackoverflow.com/questions/46483/htmlentities-vs-htmlspecialchars
+             /*
+                htmlentities — Convert all applicable characters to HTML entities.
+                htmlspecialchars — Convert special characters to HTML entities.
+                Source- https://stackoverflow.com/questions/46483/htmlentities-vs-htmlspecialchars/3614344
+            */
 
             //However, if you also have additional characters that are Unicode or uncommon symbols in your text then you should use htmlentities() to ensure they show up properly in your HTML page.
 
@@ -289,19 +276,17 @@
 
             return $valueToValidate;
         }
-
-       
-
-
-
         #endregion
 
-        #region Required or Optional
-
-
+        #region Required and Optional
 
         /**
+         * required()
+         * 
+         * Checks whether current value is required or optional.
+         * 
          * @return $this
+         * 
          * @throws FormValidationException
          */
         public function required(){
@@ -312,6 +297,15 @@
             return $this;
         }
 
+        /**
+         * optional()
+         * 
+         * The opposite of required()
+         * This method is not required to call.
+         * Because the value is optional by default.
+         * 
+         * @return this @this
+         */
         public function optional(){
             $this->required = false;
             return $this;
@@ -323,15 +317,21 @@
         #region Check for data type
 
         /**
-         * Check for alphabet character(s)
-         * @param true/false
-         * @return this
+         * asAlphabetic()
+         * 
+         * Check for alphabet character(s).
+         * It allows only A-Z/a-z.
+         * 
+         * @param bool @allowSpace - sets whether allow space in the value.
+         * 
+         * @return this $this
+         * 
          * @throws FormValidationException
          */
-        public function asAlphabetic($allow_space){
+        public function asAlphabetic($allowSpace){
             $this->character_or_digit = "characters";
             if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
-                if($allow_space){
+                if($allowSpace){
                     //if allow space, then remove spaces before applying ctype_alpha.
                     $temp = str_replace(" ", "", $this->valueToValidate);
                 }
@@ -347,15 +347,19 @@
         }
 
         /**
-         * Check for alphanumeric character(s)
-         * @param true/false
-         * @return this
-         * * @throws FormValidationException
+         * asAlphaNumeric()
+         * 
+         * Check for alpha-numeric character(s).
+         * It allows only A-Z, a-z and 0-9.
+         * 
+         * @param boolean $allowSpace
+         * @return this $this
+         * @throws FormValidationException
          */
-        public function asAlphaNumeric($allow_space){
+        public function asAlphaNumeric($allowSpace){
             $this->character_or_digit = "characters";
             if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
-                if($allow_space){
+                if($allowSpace){
                     //if allow space, then remove spaces before applying ctype_alpha.
                     $temp = str_replace(" ", "", $this->valueToValidate);
                 }
@@ -373,7 +377,10 @@
 
         
         /**
-         * @return this
+         * asNumeric()
+         * 
+         * @return this $this
+         * 
          * @throws FormValidationException
          */
         public function asNumeric(){
@@ -388,8 +395,10 @@
         }
 
         /**
-         * value can be "1.001" or 1.001
-         * @return $this
+         * value can be "1001" or 1001
+         * 
+         * @return this $this
+         * 
          * @throws FormValidationException
          */
         public function asInteger(){
@@ -457,6 +466,28 @@
             return $this;
         }
         
+                //It counts the digits after a decimal point.
+        //i.e. 
+        private function _count_decimal_value($required_digits){
+            $arr = explode('.', strval($this->valueToValidate));
+            if(strlen($arr[1]) == $required_digits){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+    
+        private function _has_decimal($number){
+           $count = substr_count(strval($number), '.');
+           if($count == 1){
+               return true;
+           }
+           else{
+               return false;
+           }
+        }
+
         public function asEmail(){
             if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
                 $label = $this->label;
@@ -468,8 +499,12 @@
         }
 
         /**
-         * Checks whether a mobile number is in valid format.
-         * @return formatted mobile numbers with "880" prefix.
+         * asMobile()
+         * 
+         * Checks whether a mobile number is valid.
+         * It produces a valid mobile mobile with "880" prefix.
+         * 
+         * @return this $this
          * @throws FormValidationException.
          */
         public function asMobile(){
@@ -708,27 +743,16 @@
             return $temp;
         }
 
-        //It counts the digits after a decimal point.
-        //i.e. 
-        private function _count_decimal_value($required_digits){
-            $arr = explode('.', strval($this->valueToValidate));
-            if(strlen($arr[1]) == $required_digits){
-                return true;
-            }
-            else{
-                return false;
-            }
+                
+        private function _reset_private_variables(){
+            $this->label = "";
+            unset($this->defaultValue);
+            $this->required = false;
+            unset($this->valueToValidate);
+            $this->character_or_digit = "";
         }
-    
-        private function _has_decimal($number){
-           $count = substr_count(strval($number), '.');
-           if($count == 1){
-               return true;
-           }
-           else{
-               return false;
-           }
-        }
+
+
 
 
     } //<--class
