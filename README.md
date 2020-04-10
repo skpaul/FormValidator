@@ -21,52 +21,104 @@ Validate HTTP Post in PHP backend.
 
 It has mainly three parts
 
-				1.  Input Value & Metadata: Takes input from the outside world and few information about the value.
-   				2.  Sanitizing                         :  Make the data clean and safe for further processing.
-   				3.  Validation                         : Performs various types of validation.
+				1.  Parameter Value & Metadata  : Takes value from the outside world along with few information.
+   				2.  Sanitization                                 :  Makes the data clean and safe for further processing.
+   				3.  Validation                                     : Performs various types of validation.
 
 Let's see those one by one -
 
 
 
-#### Validating Value & Metadata
+#### Parameter Value & Metadata
 
 ```php
 require_once("FormValidator.php");
 $fv = new FormValidator();
 ```
 
-It's pretty simple-
+It takes a parameter value to sanitize and validate. The simplest way is -
 
 ```php
-$fv->value($value);
+$fv->value($value)->validate();
 ```
 
-You can also take parameter directly from HTTP GET/POST - 
+But always remember to put a **validate()** at last.
+
+You can also take parameter directly from HTTP GET/POST request - 
 
 ```php
-$fv->httpGet($fieldName);  //HTTP GET
-$fv->httpPost($fieldName); //HTTP POST
+$fv->httpGet($fieldName)->validate();  //HTTP GET
+$fv->httpPost($fieldName)->validate(); //HTTP POST
 ```
+
+
 
 You can mark the HTTP GET/POST field as required or optional - 
 
 ```php
-$fv->httpPost("student_name"); //default is required = true.
-
-//make it optional
-$fv->httpPost("student_name", false); //now it is optional.
+$fv->httpPost($fieldName)->validate();         //default is required = true.
+$fv->httpPost($fieldName, false)->validate();  //now it is optional.
 ```
 
-if you mark the field as required, then that field must be present in the **$_POST** or **$_GET** array.  Otherwise, you'll get a **FormValidationException**.
+if you mark the field as required, then that field name must be present in the **$_POST** or **$_GET** array.  Otherwise, you'll get a **FormValidationException**.
 
-```html
+
+
+Let's see an example-
+
+```php+HTML
 <form>
   <input name="student_name" type="text">
 </form>
+
+<?php
+$studentName = $fv->httpPost("student_name")->validate();  //OK.
+$age         = $fv->httpPost("age")->validate();           //Throws Exception
+?>
+
 ```
 
 
+
+###### Label()
+
+Label is the description of the parameter. Similar to HTML `<label></label>` tag. You should provide a label so that it can compose a meaningful message if validation fails.
+
+```php
+try {       
+     $age = $fv->label("Student's Age")->httpPost("age")->validate(); //Exception         
+} 
+catch (FormValidationException $exp) {
+      echo $exp->getMessage(); //"Student's Age required"
+}
+```
+
+
+
+###### default()
+
+If the user input is optional, this method is required to set data for database table.
+
+ In the example below, there is no "**age**" field in the form. Therefore 0 has been set as default value for **student** database table.
+
+```php
+try {       
+     $age = $fv->label("Student's Age")->httpPost("age", false)->default(0)->validate(); //Exception         
+} 
+catch (FormValidationException $exp) {
+      echo $exp->getMessage(); //"Student's Age required"
+}
+```
+
+If the user input is mandatory, no need to use default().
+
+Please note that, there is no default order position for label(), httpPost()/httpGet() and default() method. You are free to interchange their position - 
+
+```php
+$fv->label("Age")->httpPost("age", false)->default(0)->validate();  //OK
+$fv->httpPost("age", false)->default(0)->label("Age")->validate();  //OK
+$fv->default(0)->label("Age")->httpPost("age", false)->validate();  //OK
+```
 
 
 
