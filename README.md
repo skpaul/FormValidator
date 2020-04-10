@@ -4,7 +4,7 @@ Validate HTTP Post in PHP backend.
 ## What it does?
 
 1. It takes a value
-2. Sanitizes (make it clean and safe) the data by removing html tags, backslashes and HTML special characters. Configurable.
+2. Sanitizes (make it clean and safe) the data by removing html & JavaScript tags, backslashes and HTML special characters. Configurable.
 3. Checks whether a value is required or optional
 4. Checks whether datatype is valid i.e. integer or date
 5. Checks whether data format is valid i.e. yyyy-mm-dd or dd-mm-yyyy
