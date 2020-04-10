@@ -13,14 +13,14 @@
          *
          * @var mix $valueToValidate
          */
-        private $valueToValidate = null;
+        private $valueToValidate;
 
         /**
          * Here we keep the default value of the data.
          *
-         * @var mix $defaltValue
+         * @var mix $defaultValue
          */
-        private $defaltValue;
+        private $defaultValue;
 
         private $required = false;
         
@@ -44,18 +44,7 @@
 
 
 
-        /**
-         * default()
-         * 
-         * If the user input is optional, this method is required to set data for database table.
-         * If the user input is mandatory, no need to use this method.
-         * 
-         * @return this. 
-         */
-        public function default($defaltValue){
-            $this->defaultValue = $defaltValue;
-            return $this;
-        }
+
 
         #region Receive value to validate
 
@@ -120,25 +109,74 @@
 
             return $this;
         }
+
+        /**
+         * default()
+         * 
+         * If the user input is optional, this method is required to set data for database table.
+         * If the user input is mandatory, no need to use this method.
+         * 
+         * @param mix $defaultValue
+         * 
+         * @return this. 
+         */
+        public function default($defaultValue){
+            $this->defaultValue = $defaultValue;
+            return $this;
+        }
         #endregion
 
         #region Normalize & Sanitize
 
-
-
-        //Strip HTML and PHP tags from a string. (PHP 4, PHP 5, PHP 7)
-        public function removeTags($allowable_tags = null){
-            $this->_strip_tags($allowable_tags); 
+        /**
+         * sanitize()
+         * 
+         * It removes HTML & JavaScript tags, backslashes(\) and HTML special characters
+         * 
+         * @param bool $removeTags - whether remove tags or not
+         * @param bool $removeBackSlashes - whether remove backslashes or not
+         * @param bool $convert - whether convert HTML special characters
+         */
+        public function sanitize($removeTags = true, $removeBackSlashes = true, $convert = true){
+            if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
+                $this->valueToValidate = $this->_sanitize($this->valueToValidate, $removeTags, $removeBackSlashes, $convert);
+            }
             return $this;
         }
 
-        private function _strip_tags($allowable_tags){
+        private function _sanitize($valueToValidate, $removeTags, $removeBackSlashes, $convert){
+            if($removeTags){
+                $valueToValidate = $this->_strip_tags($valueToValidate, null);
+            }
+
+            if($removeBackSlashes){
+                $valueToValidate = $this->_remove_slashes($valueToValidate);
+            }
+
+            if($convert){
+                $valueToValidate = $this->_htmlspecialchars($valueToValidate);
+            }
+
+            return $valueToValidate;
+        }
+
+        //Strip HTML and PHP tags from a string. (PHP 4, PHP 5, PHP 7)
+        public function removeTags($allowable_tags = null){
+            $this->valueToValidate = $this->_strip_tags($this->valueToValidate, $allowable_tags); 
+            return $this;
+        }
+
+        private function _strip_tags($valueToValidate, $allowable_tags){
+            //strip_tags() - Strip HTML and PHP tags from a string
+
             if(isset($allowable_tags) && !empty($allowable_tags)){
-                $this->valueToValidate = strip_tags($this->valueToValidate, $allowable_tags); 
+                $valueToValidate = strip_tags($valueToValidate, $allowable_tags); 
             }
             else{
-                $this->valueToValidate = strip_tags($this->valueToValidate); 
+                $valueToValidate = strip_tags($valueToValidate); 
             }
+
+            return $valueToValidate;
         }
 
 
@@ -149,22 +187,24 @@
             stripslashes("how\'s going on?") = how's going on?
         */
         public function removeBackslashes(){
-            $this->_remove_slashes(); 
+            //The following cascading variables used for making the debugging easy.
+            $valueToValidate = $this->valueToValidate ;
+            $valueToValidate = $this->_remove_slashes($valueToValidate); 
+            $this->valueToValidate = $valueToValidate;
             return $this;
         }
 
-        private function _remove_slashes(){
+        private function _remove_slashes($valueToValidate){
             /* 
                 Example 
-
                 $text="My dog don\\\\\\\\\\\\\\\\'t like the postman!";
                 echo removeslashes($text);
-
                 RESULT: My dog don't like the postman!
             */
 
-            $temp = implode("", explode("\\", $this->valueToValidate));
-            $this->valueToValidate = stripslashes(trim($temp));
+            $temp = implode("", explode("\\", $valueToValidate));
+            $valueToValidate = stripslashes(trim($temp));
+            return $valueToValidate;
         }
 
         /*
@@ -180,6 +220,11 @@
             echo $new; // &lt;a href=&#039;test&#039;&gt;Test&lt;/a&gt;
             ---------------------------------------------------------------
         */
+        /**
+         * convert()
+         * 
+         * Convert special characters to HTML entities
+         */
         public function convert(){
             /*
                 ENT_COMPAT	Will convert double-quotes and leave single-quotes alone.
@@ -190,43 +235,24 @@
             return $this;
         }
 
-        
-        private function _htmlspecialchars(){
+        //If you use this method,
+        // you should use 'htmlspecialchars_decode()' to show back the data.
+        private function _htmlspecialchars($valueToValidate){
+
+            //htmlentities() vs. htmlspecialchars()
+            //https://stackoverflow.com/questions/46483/htmlentities-vs-htmlspecialchars
+
             /*
                 ENT_COMPAT	Will convert double-quotes and leave single-quotes alone.
                 ENT_QUOTES	Will convert both double and single quotes.
                 ENT_NOQUOTES	Will leave both double and single quotes unconverted.
             */
-            $this->valueToValidate = htmlspecialchars($this->valueToValidate, ENT_QUOTES);  // Converts both double and single quotes
+            $valueToValidate = htmlspecialchars($this->valueToValidate, ENT_QUOTES);  // Converts both double and single quotes
         }
 
-        private function _normalize($RemoveTags, $RemoveBackSlashes, $Convert){
-            if($RemoveTags){
-                $this->_strip_tags(null);
-            }
+       
 
-            if($RemoveBackSlashes){
-                $this->_remove_slashes();
-            }
 
-            if($Convert){
-                $this->_remove_slashes();
-            }
-        }
-
-        public function normalize($RemoveTags = true, $RemoveBackSlashes = true, $Convert = true){
-            if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
-                $this->_normalize($RemoveTags, $RemoveBackSlashes, $Convert);
-            }
-            return $this;
-        }
-
-        public function normalizeAll(){
-            if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
-                $this->_normalize(true, true, true);
-            }
-            return $this;
-        }
 
         #endregion
 
