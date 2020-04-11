@@ -21,9 +21,10 @@ Validate HTTP Post in PHP backend.
 
 It has mainly three parts
 
-				1.  Parameter Value & Metadata  : Takes value from the outside world along with few information.
-   				2.  Sanitization                                 :  Makes the data clean and safe for further processing.
-   				3.  Validation                                     : Performs various types of validation.
+1.  Parameter Value & Metadata  : Takes value from the outside world along with few information.
+
+      				2.  Sanitization                                 :  Makes the data clean and safe for further processing.
+      				3.  Validation                                     : Performs various types of validation.
 
 Let's see those one by one -
 
@@ -36,11 +37,63 @@ require_once("FormValidator.php");
 $fv = new FormValidator();
 ```
 
-It takes a parameter value to sanitize and validate. The simplest way is -
+The simplest way to get started is -
 
 ```php
-$fv->value($value)->validate();
+$beforeValidate = "Hello World";
+$afterValidate = $fv->value($beforeValidate)->validate();
 ```
+
+But in the above example, there is no validation rule actually.
+
+Let's start to validate step by step.
+
+In the following example, we'll check a **required** value by `required()` rule. If the variable is empty, this rule throws a FormValidationException.
+
+```php
+$beforeValidate = "";
+$afterValidate = $fv->value($beforeValidate)->required()->validate(); //Exception
+```
+
+
+
+###### Make your data clean and safe- Data Sanitization
+
+You can make your data clean and safe by using the **sanitize()** rule.
+
+- It strips/removes HTML and PHP tags from the value
+
+  ```php
+  $beforeValidate = "<a href='test'>Test</a>";
+  $afterValidate = $fv->value($beforeValidate)->sanitize()->validate();
+  $afterValidate = "Test";
+  ```
+
+- It removes backslashes
+
+  ```php
+  $beforeValidate = "how\'s going on?";
+  $afterValidate = $fv->value($beforeValidate)->sanitize()->validate();
+  $afterValidate = "how's going on?";
+  ```
+
+- It translates the characters that have special meaning in HTML
+
+  ```php
+  $beforeValidate = "<a href='test'>Test</a>";
+  $afterValidate = $fv->value($beforeValidate)->sanitize()->validate();
+  $afterValidate = "&lt;a href='test'&gt;Test&lt;/a&gt;";
+  ```
+
+
+
+You can customize the default behavior of sanitize() as follows
+
+```
+sanitize($removeTags, $removeBackslash , $convertHtmlSpecialChars);
+```
+
+In the above example, 
 
 But always remember to put a **validate()** at last.
 
