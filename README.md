@@ -123,9 +123,7 @@ You can customize the default behavior of **sanitize()** as follows -
 
 
 
-
-
-You can use the following rules instead of sanitize() -
+However, you can have more control on data sanitization. Instead of **sanitize()**, you can use the following-
 
 - **removeTags()**
 
@@ -137,24 +135,30 @@ You can use the following rules instead of sanitize() -
 
 - **removeSlash()**
 
+  Remove the backslash from a string. 
+
   ```php
+  //Syntax
   removeSlash()
+      
+  $raw = "how\'s going on?";
+  $afterValidate = $fv->value(raw)->removeSlash()->validate();
+  echo $afterValidate; //how's going on?
   ```
 
 - **convert()** 
 
   Convert special characters to HTML entities. 
 
-  If you set `$convertDoubleQuote = false,` it'll not convert double quote symbol. 
-
-  If you set `$convertSingleQuote= false,` it'll not convert single quote symbol. 
+  ```php
+  //Syntax
+  convert(bool $convertDoubleQuote = true, bool $convertSingleQuote = true)
+  ```
 
   ```php
-  convert(bool $convertDoubleQuote = true, bool $convertSingleQuote = true)
-  
   $beforeValidate = "<br> This is a break";
   $afterValidate = $fv->value($beforeValidate)->convert()->validate();
-  $afterValidate = "&lt;br&gt; This is a break";
+$afterValidate = "&lt;br&gt; This is a break";
   
   $beforeValidate = "\"Double 'Single";
   $afterValidate = $fv->value($beforeValidate)->convert(true, false)->validate();
@@ -166,91 +170,92 @@ You can use the following rules instead of sanitize() -
   
   $beforeValidate = "\"Double 'Single";
   $afterValidate = $fv->value($beforeValidate)->convert(false, false)->validate();
-  $afterValidate = ""Double 'Single";    
+  $afterValidate = ""Double 'Single";  
   ```
-
-
+  
+  
 
 ### Datatype Rules
 
-- **asAlphabetic()** - Allow alphabets (A-Z, a-z) only
+- **asLetters()** - Allow alphabets (A-Z, a-z) only.
 
   ```php
   //Syntax
-  asAlphabetic(bool $allowSpace)
+  asLetters(bool $allowSpace)
   
   $beforeValidate = "This is a sentence";
-  $afterValidate = $fv->value($beforeValidate)->asAlphabetic(false)->validate(); //Exception : White space not allowed.
+  $afterValidate = $fv->value($beforeValidate)->asLetters(false)->validate(); //Exception : White space not allowed.
   
   $beforeValidate = "This_is_a_sentence";
-  $afterValidate = $fv->value($beforeValidate)->asAlphabetic(false)->validate(); //OK
+  $afterValidate = $fv->value($beforeValidate)->asLetters(false)->validate(); //OK
   $afterValidate = "This_is_a_sentence"; 
   
   $beforeValidate = "This is a sentence";
-  $afterValidate = $fv->value($beforeValidate)->asAlphabetic(true)->validate();
+  $afterValidate = $fv->value($beforeValidate)->asLetters(true)->validate();
   $afterValidate = "This is a sentence"; 
   
   $before = "This is sentence 1";
-  $after = $fv->value($before)->asAlphabetic(true)->validate(); //Exception : number not allowed.
+  $after = $fv->value($before)->asLetters(true)->validate(); //Exception : number not allowed.
   ```
 
   
 
-- **asNumeric()** - Allow numbers (0-9) only
+- **asNumbers()** - Allow numbers (0-9) only
 
-```php
-//Syntax
-asNumeric()
+  ```php
+  $before = "12345A";
+  $after = $fv->value($before)->asNumbers()->validate(); //Exception : Invalid number.
+  ```
 
-$before = "12345A";
-$after = $fv->value($before)->asNumeric()->validate(); //Exception : Invalid number.
-```
+  
 
+- **asAlphaNumeric()**
 
+  Checks for either a letter or a digit. Allow alphabets (A-Z, a-z) and numbers (0-9), but not any special characters-
 
-Allow alphabets (A-Z, a-z) and numbers (0-9), but not any special characters-
+  ```php
+  //Syntax
+  asAlphaNumeric(bool $allowSpace)
+  ```
 
-```
-asAlphaNumeric(bool $allowSpace)
-```
+  
 
+- noSpecialChar()
 
+  Similar to asAlphaNumeric()
 
-Allow integer only
+  ```
+  //Syntax
+  noSpecialChar(bool $allowSpace)
+  ```
 
-```
-asInteger()
-```
+  
 
+- **asInteger()**
 
+  Allow integer only.
 
-```
-asFloat()
-```
+- **asFloat()**
 
+  Allow float only.
 
+- **asDate()**
 
-```
-asEmail()
-```
+  Allow date/datetime only.
 
+- **asEmail()**
 
+  Allow email only.
 
-```
-asMobile()
-```
+- **asMobile()**
 
-
-
-```
-asDate
-```
+  Allow mobile numbers only. Applicable only for Bangladeshi numbers.
 
 
 
 ### Rules for Length validation
 
-##### equalLength() 
+###### equalLength() 
 
 Checks whether the value has the specified length.
 
@@ -262,7 +267,9 @@ $before = "Bangladesh";
 $after = $fv->value($before)->equalLength(5)->validate(); //Exception : Length must be equal to 5 characters.
 ```
 
-##### minLength() 
+
+
+###### minLength() 
 
 Checks whether the value has the specified minimum length.
 
@@ -276,7 +283,7 @@ $after = $fv->value($before)->minLength(20)->validate(); //Exception : Length mu
 
 
 
-##### maxLength() 
+###### maxLength() 
 
 Checks whether the value has the specified maximum length.
 
@@ -292,7 +299,7 @@ $after = $fv->value($before)->maxLength(2)->validate(); //Exception : Length mus
 
 ### Rules for value range validation
 
-##### equalValue() 
+###### equalValue() 
 
 Checks whether the value has the specified length.
 
@@ -306,7 +313,7 @@ $validated = $fv->value($before)->equalValue("Bangla")->validate(); //Exception 
 
 
 
-##### minValue() 
+###### minValue() 
 
 Checks whether the value has the minimum specified value.
 
@@ -320,7 +327,7 @@ $after = $fv->value($before)->minValue(2)->validate(); //Exception : Must be equ
 
 
 
-##### maxValue() 
+###### maxValue() 
 
 Checks whether the value has the specified maximum length.
 
@@ -402,24 +409,4 @@ $age = $fv->label("Student's Age")->httpPost("age", false)->default(0)->validate
 If the user input is mandatory, no need to use default().
 
 
-
-
-
-Please note that, there is no default order position for label(), httpPost()/httpGet() and default() method. You are free to interchange their position - 
-
-```php
-$fv->label("Age")->httpPost("age", false)->default(0)->validate();  //OK
-$fv->httpPost("age", false)->default(0)->label("Age")->validate();  //OK
-$fv->default(0)->label("Age")->httpPost("age", false)->validate();  //OK
-```
-
-
-
-###### required() and optional()
-
-you can use **required()** before **sanitize()** or after or both.
-
-```php
-$form->value("abc")->required()->sanitize()->required()->validate();
-```
 

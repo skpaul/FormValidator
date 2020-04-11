@@ -317,7 +317,7 @@
         #region Check for data type
 
         /**
-         * asAlphabetic()
+         * asLetters()
          * 
          * Check for alphabet character(s).
          * It allows only A-Z/a-z.
@@ -328,7 +328,7 @@
          * 
          * @throws FormValidationException
          */
-        public function asAlphabetic($allowSpace){
+        public function asLetters($allowSpace){
             $this->character_or_digit = "characters";
             if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
                 if($allowSpace){
@@ -396,6 +396,24 @@
             return $this;
         }
         
+        public function noSpecialChar($allowSpace){
+            $this->character_or_digit = "characters";
+            if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
+                if($allowSpace){
+                    //if allow space, then remove spaces before applying ctype_alpha.
+                    $temp = str_replace(" ", "", $this->valueToValidate);
+                }
+                else{
+                    $temp = $this->valueToValidate;
+                }
+
+                if(!ctype_alnum($temp)){
+                    throw new FormValidationException("{$this->label} must be a-z/A-Z and/or 0-9.");
+                }
+            }
+            
+            return $this;
+        }
         /**
          * asNumeric()
          * 
@@ -403,7 +421,7 @@
          * 
          * @throws FormValidationException
          */
-        public function asNumeric(){
+        public function asNumbers(){
             $this->character_or_digit = "digits";
             if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
                 if(!is_numeric($this->valueToValidate)){
