@@ -1,105 +1,127 @@
 # FormValidator (Beta)
-Validate manually-provided data or  HTTP GET in PHP backend.
+Validate HTTP GET/POST and any raw value.
 
 
 
 ## What it does?
 
-1. It takes a value
-2. Sanitizes (make it clean and safe) the data i.e. removes HTML & JavaScript tags, backslashes and HTML special characters.
-3. Checks whether a value is required or optional
-4. Checks whether datatype is valid i.e. integer or date
-5. Checks whether data format is valid i.e. yyyy-mm-dd or dd-mm-yyyy
-6. Checks whether range is valid i.e. minimum or maximum value
-7. Checks whether length is valid i.e. maximum 10 characters
-8. If any validation fails, throws `FormValidationException`
-9. If everything is fine, returns the value.
+1. Sanitizes (make it clean and safe) the data
+2. Checks whether a value is required or optional
+3. Checks whether datatype is valid i.e. integer or date
+4. Checks whether data format is valid i.e. yyyy-mm-dd or dd-mm-yyyy
+5. Checks whether range is valid i.e. minimum or maximum value
+6. Checks whether length is valid i.e. maximum 10 characters
+7. If any validation fails, throws `FormValidationException`
+8. If everything is fine, returns the value.
 
 
 
-## First thing is first
+## Installation
 
-It has mainly three parts
+- Download the repository
 
-1.  Parameter Value & Metadata  : Takes value from the outside world along with few information.
+- Add *require_once("FormValidator.php")* in your script.
 
-      				2.  Sanitization                                 :  Makes the data clean and safe for further processing.
-      				3.  Validation                                     : Performs various types of validation.
+  
 
-Let's see those one by one -
+## Let's get started
 
-
-
-#### Parameter Value & Metadata
+Create a new instance of *FormValidator* class-
 
 ```php
-require_once("FormValidator.php");
 $fv = new FormValidator();
 ```
 
-The simplest way to get started is -
+The simplest way to start a validation is -
 
 ```php
-$beforeValidate = "Hello World";
-$afterValidate = $fv->value($beforeValidate)->validate();
+$rawValue = "Hello World";
+$validatedValue = $fv->value($rawValue)->validate();
 ```
 
 But in the above example, there is no validation rule actually.
 
 Let's start to validate step by step.
 
-In the following example, we'll check a **required** value by `required()` rule. If the variable is empty, this rule throws a FormValidationException.
+###### required() rule
+
+If the *$value* is empty, this rule throws a *FormValidationException*.
 
 ```php
-$beforeValidate = "";
-$afterValidate = $fv->value($beforeValidate)->required()->validate(); //Exception
+$value = "";
+
+//FormValidationException
+$afterValidate = $fv->value($beforeValidate)->required()->validate();
+```
+
+You should always use a try .. catch to trap the FormValidationException-
+
+```php
+try {
+   $value = "";
+   $fv->value($beforeValidate)->required()->validate(); 
+} 
+catch (FormValidationException $fvExp) {
+   echo $exp->getMessage();
+}
 ```
 
 
 
-###### Make your data clean and safe- Data Sanitization
+###### Data Sanitization
 
-You can make your data clean and safe by using the **sanitize()** rule.
+You can make your data clean and safe by using the **sanitize()** rule. This rule is a shorthand of *removeTags()*, *removeSlash()* and *convert()* rules.
 
-- It strips/removes HTML and PHP tags from the value
+**Syntax:**
+
+```php
+//All parameters are TRUE by default
+sanitize(bool $removeTags, bool $removeBackslash, bool $convertHtmlSpecialChars)
+```
+
+The **sanitize()** rule does the following -
+
+- It strips/removes HTML and PHP tags from the `$string`
 
   ```php
-  $beforeValidate = "<a href='test'>Test</a>";
-  $afterValidate = $fv->value($beforeValidate)->sanitize()->validate();
-  $afterValidate = "Test";
+  $string = "<a href='test'>Test</a>";
+  $afterValidate = $fv->value($string)->sanitize()->validate();
+  echo $afterValidate; //Test
   ```
 
-- It removes backslashes
+- It removes *backslashes* from `$beforeValidate`
 
   ```php
   $beforeValidate = "how\'s going on?";
   $afterValidate = $fv->value($beforeValidate)->sanitize()->validate();
-  $afterValidate = "how's going on?";
+  echo $afterValidate; //how's going on?
   ```
 
-- It translates the characters that have special meaning in HTML
+- It translates the characters that have special meaning in HTML from `$beforeValidate`
 
   ```php
   $beforeValidate = "<a href='test'>Test</a>";
   $afterValidate = $fv->value($beforeValidate)->sanitize()->validate();
-  $afterValidate = "&lt;a href='test'&gt;Test&lt;/a&gt;";
+  echo $afterValidate; //&lt;a href='test'&gt;Test&lt;/a&gt;
   ```
 
-
-
-You can customize the default behavior of **sanitize()** as follows. All parameters are boolean and default is TRUE.
+You can use **sanitize()** before, after or both of any other rule -
 
 ```php
-sanitize($removeTags, $removeBackslash , $convertHtmlSpecialChars)
+->required()->sanitize()->
+//OR
+->sanitize()->required()->
+//OR
+required()->sanitize()->required()->
 ```
 
-You can set FALSE to all/any of the parameters- 
+You can customize the default behavior of **sanitize()** as follows - 
 
-```php
-sanitize(true, false , true)
-OR//
-sanitize(false, false , true)
-```
+- If `$removeTags = FALSE`, sanitize() will not remove any tags
+- If `$removeSlash = FALSE`, sanitize() will not remove any backslashes
+- If `$convertHtmlSpecialChars= FALSE`, sanitize() will not convert any HTML characters.
+
+
 
 
 
@@ -151,31 +173,33 @@ You can use the following rules instead of sanitize() -
 
 ### Datatype Rules
 
-Allow alphabets (A-Z, a-z) only
+- **asAlphabetic()** - Allow alphabets (A-Z, a-z) only
+
+  ```php
+  //Syntax
+  asAlphabetic(bool $allowSpace)
+  
+  $beforeValidate = "This is a sentence";
+  $afterValidate = $fv->value($beforeValidate)->asAlphabetic(false)->validate(); //Exception : White space not allowed.
+  
+  $beforeValidate = "This_is_a_sentence";
+  $afterValidate = $fv->value($beforeValidate)->asAlphabetic(false)->validate(); //OK
+  $afterValidate = "This_is_a_sentence"; 
+  
+  $beforeValidate = "This is a sentence";
+  $afterValidate = $fv->value($beforeValidate)->asAlphabetic(true)->validate();
+  $afterValidate = "This is a sentence"; 
+  
+  $before = "This is sentence 1";
+  $after = $fv->value($before)->asAlphabetic(true)->validate(); //Exception : number not allowed.
+  ```
+
+  
+
+- **asNumeric()** - Allow numbers (0-9) only
 
 ```php
-asAlphabetic(bool $allowSpace)
-
-$beforeValidate = "This is a sentence";
-$afterValidate = $fv->value($beforeValidate)->asAlphabetic(false)->validate(); //Exception : White space not allowed.
-
-$beforeValidate = "This_is_a_sentence";
-$afterValidate = $fv->value($beforeValidate)->asAlphabetic(false)->validate(); //OK
-$afterValidate = "This_is_a_sentence"; 
-
-$beforeValidate = "This is a sentence";
-$afterValidate = $fv->value($beforeValidate)->asAlphabetic(true)->validate();
-$afterValidate = "This is a sentence"; 
-
-$before = "This is sentence 1";
-$after = $fv->value($before)->asAlphabetic(true)->validate(); //Exception : number not allowed.
-```
-
-
-
-Allow numbers (0-9) only
-
-```php
+//Syntax
 asNumeric()
 
 $before = "12345A";
@@ -224,16 +248,101 @@ asDate
 
 
 
-### MISC
+### Rules for Length validation
 
-You can also take parameter directly from HTTP GET/POST request - 
+##### equalLength() 
+
+Checks whether the value has the specified length.
+
+```
+//Syntax
+equalLength(integer $length)
+
+$before = "Bangladesh";
+$after = $fv->value($before)->equalLength(5)->validate(); //Exception : Length must be equal to 5 characters.
+```
+
+##### minLength() 
+
+Checks whether the value has the specified minimum length.
+
+```
+//Syntax
+minLength(integer $length)
+
+$before = "Bangladesh";
+$after = $fv->value($before)->minLength(20)->validate(); //Exception : Length must be equal to or greater than 20 characters.
+```
+
+
+
+##### maxLength() 
+
+Checks whether the value has the specified maximum length.
+
+```
+//Syntax
+maxLength(integer $length)
+
+$before = "Bangladesh";
+$after = $fv->value($before)->maxLength(2)->validate(); //Exception : Length must be equal to or less than 2 characters.
+```
+
+
+
+### Rules for value range validation
+
+##### equalValue() 
+
+Checks whether the value has the specified length.
+
+```
+//Syntax
+equalValue(mixed $value)
+
+$raw = "Bangladesh";
+$validated = $fv->value($before)->equalValue("Bangla")->validate(); //Exception : Must be equal to Bangla.
+```
+
+
+
+##### minValue() 
+
+Checks whether the value has the minimum specified value.
+
+```
+//Syntax
+minValue(mixed $value)
+
+$before = 10;
+$after = $fv->value($before)->minValue(2)->validate(); //Exception : Must be equal to or greater than 10.
+```
+
+
+
+##### maxValue() 
+
+Checks whether the value has the specified maximum length.
+
+```
+//Syntax
+maxValue(mixed $value)
+
+$before  = new DateTime("12-12-2021", new DateTimeZone("Asia/Dhaka"));
+$maxDate = new DateTime("12-12-2020", new DateTimeZone("Asia/Dhaka"));
+$after = $fv->value($before)->maxValue($maxDate)->validate(); //Exception : Must be equal to or less than 12-12-2020.
+```
+
+
+
+### Directly get value from HTTP GET/POST
+
+You can take parameter directly from HTTP GET/POST request - 
 
 ```php
 $fv->httpGet($fieldName)->validate();  //HTTP GET
 $fv->httpPost($fieldName)->validate(); //HTTP POST
 ```
-
-
 
 You can mark the HTTP GET/POST field as required or optional - 
 
@@ -254,45 +363,47 @@ Let's see an example-
 </form>
 
 <?php
-$studentName = $fv->httpPost("student_name")->validate();  //OK.
-$age         = $fv->httpPost("age")->validate();           //Throws Exception
+   $studentName = $fv->httpPost("student_name")->validate();  //OK.
+
+   //Throws exception, because "age" field does not exist
+   $age = $fv->httpPost("age")->validate();    //FormValidationException      
 ?>
 
 ```
 
 
 
-###### Label()
+### Label()
 
 Label is the description of the parameter. Similar to HTML `<label></label>` tag. You should provide a label so that it can compose a meaningful message if validation fails.
 
 ```php
-try {       
-     $age = $fv->label("Student's Age")->httpPost("age")->validate(); //Exception         
-} 
-catch (FormValidationException $exp) {
-      echo $exp->getMessage(); //"Student's Age required"
-}
+//FormValidationException 
+//"Student's Age required"
+$age = $fv->label("Student's Age")->httpPost("age")->validate();
+
+//Now it becomes "Person's Age required"
+$age = $fv->label("Person's Age")->httpPost("age")->validate();
+
 ```
 
 
 
-###### default()
+### default()
 
 If the user input is optional, this method is required to set data for database table.
 
- In the example below, there is no "**age**" field in the form. Therefore 0 has been set as default value for **student** database table.
+In the example below, there is no "**age**" field in the form. Therefore 0 has been set as default value for **student** database table.
 
 ```php
-try {       
-     $age = $fv->label("Student's Age")->httpPost("age", false)->default(0)->validate(); //Exception         
-} 
-catch (FormValidationException $exp) {
-      echo $exp->getMessage(); //"Student's Age required"
-}
+$age = $fv->label("Student's Age")->httpPost("age", false)->default(0)->validate();
 ```
 
 If the user input is mandatory, no need to use default().
+
+
+
+
 
 Please note that, there is no default order position for label(), httpPost()/httpGet() and default() method. You are free to interchange their position - 
 
