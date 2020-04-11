@@ -1,5 +1,5 @@
 # FormValidator (Beta)
-Validate HTTP Post in PHP backend.
+Validate manually-provided data or  HTTP GET in PHP backend.
 
 
 
@@ -87,15 +87,144 @@ You can make your data clean and safe by using the **sanitize()** rule.
 
 
 
-You can customize the default behavior of sanitize() as follows
+You can customize the default behavior of **sanitize()** as follows. All parameters are boolean and default is TRUE.
+
+```php
+sanitize($removeTags, $removeBackslash , $convertHtmlSpecialChars)
+```
+
+You can set FALSE to all/any of the parameters- 
+
+```php
+sanitize(true, false , true)
+OR//
+sanitize(false, false , true)
+```
+
+
+
+You can use the following rules instead of sanitize() -
+
+- **removeTags()**
+
+  ```php
+  removeTags(mixed $allowableTags = null)
+  ```
+
+  You can use the optional parameter to specify tags which should not be removed. These are either given as string, or as of PHP 7.4.0, as array.
+
+- **removeSlash()**
+
+  ```php
+  removeSlash()
+  ```
+
+- **convert()** 
+
+  Convert special characters to HTML entities. 
+
+  If you set `$convertDoubleQuote = false,` it'll not convert double quote symbol. 
+
+  If you set `$convertSingleQuote= false,` it'll not convert single quote symbol. 
+
+  ```php
+  convert(bool $convertDoubleQuote = true, bool $convertSingleQuote = true)
+  
+  $beforeValidate = "<br> This is a break";
+  $afterValidate = $fv->value($beforeValidate)->convert()->validate();
+  $afterValidate = "&lt;br&gt; This is a break";
+  
+  $beforeValidate = "\"Double 'Single";
+  $afterValidate = $fv->value($beforeValidate)->convert(true, false)->validate();
+  $afterValidate = "&quot;Double 'Single";
+  
+  $beforeValidate = "\"Double 'Single";
+  $afterValidate = $fv->value($beforeValidate)->convert(true, true)->validate();
+  $afterValidate = "&quot;Double &#039;Single";    
+  
+  $beforeValidate = "\"Double 'Single";
+  $afterValidate = $fv->value($beforeValidate)->convert(false, false)->validate();
+  $afterValidate = ""Double 'Single";    
+  ```
+
+
+
+### Datatype Rules
+
+Allow alphabets (A-Z, a-z) only
+
+```php
+asAlphabetic(bool $allowSpace)
+
+$beforeValidate = "This is a sentence";
+$afterValidate = $fv->value($beforeValidate)->asAlphabetic(false)->validate(); //Exception : White space not allowed.
+
+$beforeValidate = "This_is_a_sentence";
+$afterValidate = $fv->value($beforeValidate)->asAlphabetic(false)->validate(); //OK
+$afterValidate = "This_is_a_sentence"; 
+
+$beforeValidate = "This is a sentence";
+$afterValidate = $fv->value($beforeValidate)->asAlphabetic(true)->validate();
+$afterValidate = "This is a sentence"; 
+
+$before = "This is sentence 1";
+$after = $fv->value($before)->asAlphabetic(true)->validate(); //Exception : number not allowed.
+```
+
+
+
+Allow numbers (0-9) only
+
+```php
+asNumeric()
+
+$before = "12345A";
+$after = $fv->value($before)->asNumeric()->validate(); //Exception : Invalid number.
+```
+
+
+
+Allow alphabets (A-Z, a-z) and numbers (0-9), but not any special characters-
 
 ```
-sanitize($removeTags, $removeBackslash , $convertHtmlSpecialChars);
+asAlphaNumeric(bool $allowSpace)
 ```
 
-In the above example, 
 
-But always remember to put a **validate()** at last.
+
+Allow integer only
+
+```
+asInteger()
+```
+
+
+
+```
+asFloat()
+```
+
+
+
+```
+asEmail()
+```
+
+
+
+```
+asMobile()
+```
+
+
+
+```
+asDate
+```
+
+
+
+### MISC
 
 You can also take parameter directly from HTTP GET/POST request - 
 

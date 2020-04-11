@@ -130,12 +130,12 @@
          * It removes HTML & JavaScript tags, backslashes(\) and HTML special characters
          * 
          * @param bool $removeTags - whether remove tags or not
-         * @param bool $removeBackslash - whether remove backslashes or not
+         * @param bool $removeSlash - whether remove backslashes or not
          * @param bool $convert - whether convert HTML special characters
          * 
          * @return this $this
          */
-        public function sanitize($removeTags = true, $removeBackslash = true, $convertHtmlSpecialChars = true){
+        public function sanitize($removeTags = true, $removeSlash = true, $convertHtmlSpecialChars = true){
             if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
                 $valueToValidate = $this->valueToValidate;
 
@@ -143,8 +143,8 @@
                     $valueToValidate = $this->_strip_tags($valueToValidate, null);
                 }
     
-                if($removeBackslash){
-                    $valueToValidate = $this->_removeBackslash($valueToValidate);
+                if($removeSlash){
+                    $valueToValidate = $this->_removeSlash($valueToValidate);
                 }
     
                 if($convertHtmlSpecialChars){
@@ -188,21 +188,21 @@
         }
 
         /**
-         * removeBackslash()
+         * removeSlash()
          * 
          * Remove the backslash (\) from a string.
          * Example: "how\'s going on?" = "how's going on?"
          * 
          */
-        public function removeBackslash(){
+        public function removeSlash(){
             //The following cascading variables used for making the debugging easy.
             $valueToValidate = $this->valueToValidate ;
-            $valueToValidate = $this->_removeBackslash($valueToValidate); 
+            $valueToValidate = $this->_removeSlash($valueToValidate); 
             $this->valueToValidate = $valueToValidate;
             return $this;
         }
 
-        private function _removeBackslash($valueToValidate){
+        private function _removeSlash($valueToValidate){
             /* 
                 Example 
                 $text="My dog don\\\\\\\\\\\\\\\\'t like the postman!";
@@ -336,6 +336,9 @@
                     $temp = str_replace(" ", "", $this->valueToValidate);
                 }
                 else{
+                    if($this->_hasWhitespace($this->valueToValidate)){
+                        throw new FormValidationException("{$this->label} can not have blank space.");
+                    }
                     $temp = $this->valueToValidate;
                 }
 
@@ -344,6 +347,24 @@
                 }
             }
             return $this;
+        }
+
+
+        /**
+         * Checks string for whitespace characters.
+         *
+         * @param string $text
+         *   The string to test.
+         * @return bool
+         *   TRUE if any character creates some sort of whitespace; otherwise, FALSE.
+         */
+        private function _hasWhitespace( $text )
+        {
+            for ( $idx = 0; $idx < strlen( $text ); $idx += 1 )
+                if ( ctype_space( $text[ $idx ] ) )
+                    return TRUE;
+
+            return FALSE;
         }
 
         /**
