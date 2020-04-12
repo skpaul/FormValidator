@@ -1,5 +1,5 @@
-# FormValidator (Beta)
-Validate HTTP GET/POST and any raw value.
+# Legitimate (Beta)
+The easiest, simplest and quickest data validation based on predefined rules in php.
 
 
 
@@ -20,16 +20,16 @@ Validate HTTP GET/POST and any raw value.
 
 - Download the repository
 
-- Add *require_once("FormValidator.php")* in your script.
+- Add *require_once("Legitimate.php")* in your script.
 
   
 
 ## Let's get started
 
-Create a new instance of *FormValidator* class-
+Create a new instance of *Legitimate* class-
 
 ```php
-$fv = new FormValidator();
+$fv = new Legitimate();
 ```
 
 The simplest way to start a validation is -
@@ -45,23 +45,23 @@ Let's start to validate step by step.
 
 ###### required() rule
 
-If the *$value* is empty, this rule throws a *FormValidationException*.
+If the *$value* is empty, this rule throws a *Lexception*.
 
 ```php
 $value = "";
 
-//FormValidationException
+//Lexception
 $afterValidate = $fv->value($beforeValidate)->required()->validate();
 ```
 
-You should always use a try .. catch to trap the FormValidationException-
+You should always use a try .. catch to trap the Lexception-
 
 ```php
 try {
    $value = "";
    $fv->value($beforeValidate)->required()->validate(); 
 } 
-catch (FormValidationException $fvExp) {
+catch (Lexception $fvExp) {
    echo $exp->getMessage();
 }
 ```
@@ -358,7 +358,7 @@ $fv->httpPost($fieldName)->validate();         //default is required = true.
 $fv->httpPost($fieldName, false)->validate();  //now it is optional.
 ```
 
-if you mark the field as required, then that field name must be present in the **$_POST** or **$_GET** array.  Otherwise, you'll get a **FormValidationException**.
+if you mark the field as required, then that field name must be present in the **$_POST** or **$_GET** array.  Otherwise, you'll get a **Lexception**.
 
 
 

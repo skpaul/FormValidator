@@ -1,11 +1,11 @@
 
 <?php 
 
-    class FormValidationException extends Exception
+    class Lexception extends Exception
     {
     }
 
-    class FormValidator{
+    class Legitimate{
         private $label = "";
 
         /**
@@ -29,7 +29,7 @@
          * 
          * It's value can be either "digits" or "characters".
          * 
-         * This variable is required to compose a meaningful message while throwing FormValidationException.
+         * This variable is required to compose a meaningful message while throwing Lexception.
          */
         private $character_or_digit = "";
 
@@ -71,7 +71,7 @@
         public function httpPost($httpPostFieldName, $isRequiredField=true){
             if($isRequiredField){
                 if(!isset($_POST[$httpPostFieldName])){
-                    throw new FormValidationException("{$this->label} required.");
+                    throw new Lexception("{$this->label} required.");
                 }
                
                 $this->valueToValidate = trim($_POST[$httpPostFieldName]);
@@ -91,7 +91,7 @@
         public function httpGet($httpGetFieldName, $isRequiredField=true){
             if($isRequiredField){
                 if(!isset($_GET[$httpGetFieldName])){
-                    throw new FormValidationException("{$this->label} required.");
+                    throw new Lexception("{$this->label} required.");
                 }
                
                 $this->valueToValidate = trim($_GET[$httpGetFieldName]);
@@ -287,12 +287,12 @@
          * 
          * @return $this
          * 
-         * @throws FormValidationException
+         * @throws Lexception
          */
         public function required(){
             $this->required = true;
             if(!isset($this->valueToValidate) || empty($this->valueToValidate)){
-                throw new FormValidationException("{$this->label} required.");
+                throw new Lexception("{$this->label} required.");
             }
             return $this;
         }
@@ -326,7 +326,7 @@
          * 
          * @return this $this
          * 
-         * @throws FormValidationException
+         * @throws Lexception
          */
         public function asLetters($allowSpace){
             $this->character_or_digit = "characters";
@@ -337,13 +337,13 @@
                 }
                 else{
                     if($this->_hasWhitespace($this->valueToValidate)){
-                        throw new FormValidationException("{$this->label} can not have blank space.");
+                        throw new Lexception("{$this->label} can not have blank space.");
                     }
                     $temp = $this->valueToValidate;
                 }
 
                 if(!ctype_alpha($temp)){
-                    throw new FormValidationException("{$this->label} must be alphabetic.");
+                    throw new Lexception("{$this->label} must be alphabetic.");
                 }
             }
             return $this;
@@ -375,7 +375,7 @@
          * 
          * @param boolean $allowSpace
          * @return this $this
-         * @throws FormValidationException
+         * @throws Lexception
          */
         public function asAlphaNumeric($allowSpace){
             $this->character_or_digit = "characters";
@@ -389,7 +389,7 @@
                 }
 
                 if(!ctype_alnum($temp)){
-                    throw new FormValidationException("{$this->label} must be a-z/A-Z and/or 0-9.");
+                    throw new Lexception("{$this->label} must be a-z/A-Z and/or 0-9.");
                 }
             }
             
@@ -408,7 +408,7 @@
                 }
 
                 if(!ctype_alnum($temp)){
-                    throw new FormValidationException("{$this->label} must be a-z/A-Z and/or 0-9.");
+                    throw new Lexception("{$this->label} must be a-z/A-Z and/or 0-9.");
                 }
             }
             
@@ -419,13 +419,13 @@
          * 
          * @return this $this
          * 
-         * @throws FormValidationException
+         * @throws Lexception
          */
         public function asNumbers(){
             $this->character_or_digit = "digits";
             if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
                 if(!is_numeric($this->valueToValidate)){
-                    throw new FormValidationException("{$this->label} must be numeric.");
+                    throw new Lexception("{$this->label} must be numeric.");
                 }
             }
             
@@ -437,21 +437,21 @@
          * 
          * @return this $this
          * 
-         * @throws FormValidationException
+         * @throws Lexception
          */
         public function asInteger(){
             $this->character_or_digit = "digits";
             if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
                 if(!is_numeric($this->valueToValidate)){
-                    throw new FormValidationException("{$this->label} must be numeric.");
+                    throw new Lexception("{$this->label} must be numeric.");
                 }
 
                 if($this->valueToValidate > PHP_INT_MAX ){
-                    throw new FormValidationException("{$this->label} must be less than or equal to " . PHP_INT_MAX . ".");
+                    throw new Lexception("{$this->label} must be less than or equal to " . PHP_INT_MAX . ".");
                 }
 
                 if(!is_int(intval($this->valueToValidate))){
-                    throw new FormValidationException("{$this->label} invalid.");
+                    throw new Lexception("{$this->label} invalid.");
                 }
 
                 $this->valueToValidate = intval($this->valueToValidate);
@@ -464,7 +464,7 @@
         /**
          * value can be "1.001" or 1.001
          * @return $this
-         * @throws FormValidationException
+         * @throws Lexception
          */
         public function asFloat(){
              //check whether has a decimal point.
@@ -483,19 +483,19 @@
                         }
                     */
                     if(!is_numeric($this->valueToValidate)){
-                        throw new FormValidationException("{$this->label} must be numeric.");
+                        throw new Lexception("{$this->label} must be numeric.");
                     }
 
                     // if(!is_float(floatval($this->valueToValidate))){
-                    //     throw new FormValidationException("{$this->label} must be numeric.");
+                    //     throw new Lexception("{$this->label} must be numeric.");
                     // }
                 }
                 else{
                     if(!is_numeric($this->valueToValidate)){
-                        throw new FormValidationException("{$this->label} must be numeric.");
+                        throw new Lexception("{$this->label} must be numeric.");
                     }
                     // if(!is_int(intval($this->valueToValidate))){
-                    //     throw new FormValidationException("{$this->label} must be numeric.");
+                    //     throw new Lexception("{$this->label} must be numeric.");
                     // }
                 }
 
@@ -530,7 +530,7 @@
             if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
                 $label = $this->label;
                 if (!filter_var($this->valueToValidate, FILTER_VALIDATE_EMAIL)) {
-                    throw new FormValidationException("{$this->label} invalid.");
+                    throw new Lexception("{$this->label} invalid.");
                 }
             }
             return $this;
@@ -543,21 +543,21 @@
          * It produces a valid mobile mobile with "880" prefix.
          * 
          * @return this $this
-         * @throws FormValidationException.
+         * @throws Lexception.
          */
         public function asMobile(){
             $MobileNumber = $this->valueToValidate;
            
             if(empty($MobileNumber)){
-                throw new FormValidationException("{$this->label} invalid.");
+                throw new Lexception("{$this->label} invalid.");
             }
         
             if(!is_numeric($MobileNumber)){
-                throw new FormValidationException("{$this->label} invalid.");
+                throw new Lexception("{$this->label} invalid.");
             }
         
             if(strlen($MobileNumber)<10){
-                throw new FormValidationException("{$this->label} invalid.");
+                throw new Lexception("{$this->label} invalid.");
             }
         
             $OperatorCodes = array( "013", "014", "015", "016", "017", "018", "019" );
@@ -565,14 +565,14 @@
             if($this->_starts_with($MobileNumber,"1")){
                 //if the number is 1711781878, it's length must be 10 digits        
                 if(strlen($MobileNumber) != 10){
-                    throw new FormValidationException("{$this->label} invalid.");
+                    throw new Lexception("{$this->label} invalid.");
                 }
         
                 $firstTwoDigits = substr($MobileNumber, 0, 2); //returns 17, 18 etc,
                 $operatorCode = "0" . $firstTwoDigits; //Making first two digits a valid operator code with adding 0.
         
                 if (!in_array($operatorCode, $OperatorCodes)) {
-                    throw new FormValidationException("{$this->label} invalid.");
+                    throw new Lexception("{$this->label} invalid.");
                 }
         
                 $finalNumberString = "880" . $MobileNumber;
@@ -584,13 +584,13 @@
             if($this->_starts_with($MobileNumber,"01")){
                 //if the number is 01711781878, it's length must be 11 digits        
                 if(strlen($MobileNumber) != 11){
-                    throw new FormValidationException("{$this->label} invalid.");
+                    throw new Lexception("{$this->label} invalid.");
                 }
         
                 $operatorCode = substr($MobileNumber, 0, 3); //returns 017, 018 etc,
                 
                 if (!in_array($operatorCode, $OperatorCodes)) {
-                    throw new FormValidationException("{$this->label} invalid.");
+                    throw new Lexception("{$this->label} invalid.");
                 }
         
                 $finalNumberString = "88" . $MobileNumber;
@@ -601,7 +601,7 @@
             if($this->_starts_with($MobileNumber,"8801")){
                 //if the number is 8801711781878, it's length must be 13 digits    
                 if(strlen($MobileNumber) != 13){
-                    throw new FormValidationException("{$this->label} invalid.");
+                    throw new Lexception("{$this->label} invalid.");
                 }
         
                 $operatorCode = substr($MobileNumber, 2, 3); //returns 017, 018 etc,
@@ -616,7 +616,7 @@
                 return $this;
             }
            
-            throw new FormValidationException("{$this->label} invalid.");
+            throw new Lexception("{$this->label} invalid.");
         }
 
         /**
@@ -637,11 +637,11 @@
                     $valueToValidate = new Datetime($valueToValidate, new DatetimeZone($datetimeZone));
                     $this->valueToValidate = $valueToValidate;
                 } catch (Exception $exp) {
-                    throw new FormValidationException("Invalid date.");
+                    throw new Lexception("Invalid date.");
                 }
                 // if(!$this->_is_date_valid($this->valueToValidate)){
                 //     $msg = "{$this->label} is invalid. It must be a valid date in dd-mm-yyyy format.";
-                //     throw new FormValidationException($msg);
+                //     throw new Lexception($msg);
                 // }
                 // $this->valueToValidate =$this->_convert_string_to_date($this->valueToValidate);
             }
@@ -688,7 +688,7 @@
          * 
          * @param int $length
          * @return this $this
-         * @throws FormValidationException
+         * @throws Lexception
          */
         public function equalLength($length){
             if(!empty($this->valueToValidate)){
@@ -696,7 +696,7 @@
                 $label = $this->label;
                 if($_length != $length){
                     $msg = "$label invalid. $length  $this->character_or_digit required. Found $_length  $this->character_or_digit.";
-                    throw new FormValidationException($msg);
+                    throw new Lexception($msg);
                 }
             }
         
@@ -710,7 +710,7 @@
          * 
          * @param int $length
          * @return this $this
-         * @throws FormValidationException
+         * @throws Lexception
          */
         public function minLength($length){
             if(!empty($this->valueToValidate)){
@@ -718,7 +718,7 @@
                 $label = $this->label;
                 if($_length < $length){
                     $msg = "{$label} Invalid. Minimum {$length} {$this->character_or_digit} required. Found $_length $this->character_or_digit.";
-                    throw new FormValidationException($msg);
+                    throw new Lexception($msg);
                 }
             }
             return $this;
@@ -731,7 +731,7 @@
          * 
          * @param int $length
          * @return this $this
-         * @throws FormValidationException
+         * @throws Lexception
          */
         public function maxLength($length){
             if(!empty($this->valueToValidate)){
@@ -739,7 +739,7 @@
                 $label = $this->label;
                 if($_length > $length){
                     $msg = "Invalid {$label}. Maximum {$length} $this->character_or_digit allowed. Found $_length $this->character_or_digit.";
-                    throw new FormValidationException($msg);
+                    throw new Lexception($msg);
                 }
             }
             return $this;
@@ -759,14 +759,14 @@
          * 
          * @param int $minimumValue
          * @return this $this
-         * @throws FormValidationException
+         * @throws Lexception
          */
         public function minValue($minimumValue){   
             if(!empty($this->valueToValidate)){
                 $label = $this->label;
                 if($this->valueToValidate < $minimumValue){
                     $msg = "$label must be equal to or greater than $minimumValue.";
-                    throw new FormValidationException($msg);
+                    throw new Lexception($msg);
                 }
             }
            
@@ -781,14 +781,14 @@
          * 
          * @param int $minimumValue
          * @return this $this
-         * @throws FormValidationException
+         * @throws Lexception
          */
         public function maxValue($maximumValue){ 
             if(!empty($this->valueToValidate)){
                 $label = $this->label;
                 if($this->valueToValidate > $maximumValue){
                     $msg = "$label must be equal to or less than $maximumValue.";
-                    throw new FormValidationException($msg);
+                    throw new Lexception($msg);
                 }
             }
             return $this;
@@ -800,7 +800,7 @@
             $label = $this->label;
             if(!$this->_starts_with($string,$startString)){
                 $msg = "$label must starts with $startString.";
-                throw new FormValidationException($msg);
+                throw new Lexception($msg);
             }
             return $this;
         } 
@@ -817,7 +817,7 @@
             $string = $this->valueToValidate;
             if(!$this->_ends_with($string, $endString)){
                 $msg = "$this->label must ends with $endString.";
-                throw new FormValidationException($msg);
+                throw new Lexception($msg);
             }
             return $this;
         } 
