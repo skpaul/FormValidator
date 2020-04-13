@@ -1,4 +1,4 @@
-# Legitimate (Beta)
+# Validable (Beta)
 The easiest, simplest and quickest data validation based on predefined rules in php.
 
 
@@ -11,7 +11,7 @@ The easiest, simplest and quickest data validation based on predefined rules in 
 4. Checks whether data format is valid i.e. yyyy-mm-dd or dd-mm-yyyy
 5. Checks whether range is valid i.e. minimum or maximum value
 6. Checks whether length is valid i.e. maximum 10 characters
-7. If any validation fails, throws `FormValidationException`
+7. If any validation fails, throws `Unvalidable`
 8. If everything is fine, returns the value.
 
 
@@ -20,16 +20,16 @@ The easiest, simplest and quickest data validation based on predefined rules in 
 
 - Download the repository
 
-- Add *require_once("Legitimate.php")* in your script.
+- Add *require_once("Validable.php")* in your script.
 
   
 
 ## Let's get started
 
-Create a new instance of *Legitimate* class-
+Create a new instance of *Validable* class-
 
 ```php
-$fv = new Legitimate();
+$fv = new Validable();
 ```
 
 The simplest way to start a validation is -
@@ -45,23 +45,23 @@ Let's start to validate step by step.
 
 ###### required() rule
 
-If the *$value* is empty, this rule throws a *Lexception*.
+If the *$value* is empty, this rule throws an *Unvalidable* exception - 
 
 ```php
 $value = "";
 
-//Lexception
+//Unvalidable
 $afterValidate = $fv->value($beforeValidate)->required()->validate();
 ```
 
-You should always use a try .. catch to trap the Lexception-
+You should always use a try .. catch to trap the Unvalidable-
 
 ```php
 try {
    $value = "";
    $fv->value($beforeValidate)->required()->validate(); 
 } 
-catch (Lexception $fvExp) {
+catch (Unvalidable $fvExp) {
    echo $exp->getMessage();
 }
 ```
@@ -358,7 +358,7 @@ $fv->httpPost($fieldName)->validate();         //default is required = true.
 $fv->httpPost($fieldName, false)->validate();  //now it is optional.
 ```
 
-if you mark the field as required, then that field name must be present in the **$_POST** or **$_GET** array.  Otherwise, you'll get a **Lexception**.
+if you mark the field as required, then that field name must be present in the **$_POST** or **$_GET** array.  Otherwise, you'll get a **Unvalidable**.
 
 
 
