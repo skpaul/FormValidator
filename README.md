@@ -155,10 +155,10 @@ However, you can have more control on data sanitization. Instead of **sanitize()
   convert(bool $convertDoubleQuote = true, bool $convertSingleQuote = true)
 ```
 
-  ```php
+```php
   $beforeValidate = "<br> This is a break";
   $afterValidate = $fv->value($beforeValidate)->convert()->validate();
-  $afterValidate = "&lt;br&gt; This is a break";
+  echo $afterValidate;  // "&lt;br&gt; This is a break"
   
   $beforeValidate = "\"Double 'Single";
   $afterValidate = $fv->value($beforeValidate)->convert(true, false)->validate();
