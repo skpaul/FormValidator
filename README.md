@@ -29,14 +29,14 @@ The easiest, simplest and quickest data validation based on predefined rules in 
 Create a new instance of *Validable* class-
 
 ```php
-$fv = new Validable();
+$v = new Validable();
 ```
 
 The simplest way to start a validation is -
 
 ```php
 $rawValue = "Hello World";
-$validatedValue = $fv->value($rawValue)->validate();
+$validatedValue = $v->value($rawValue)->validate();
 ```
 
 But in the above example, there is no validation rule actually.
@@ -51,7 +51,7 @@ If the *$value* is empty, this rule throws an *Unvalidable* exception -
 $value = "";
 
 //Unvalidable
-$afterValidate = $fv->value($beforeValidate)->required()->validate();
+$afterValidate = $v->value($beforeValidate)->required()->validate();
 ```
 
 You should always use a try .. catch to trap the Unvalidable-
@@ -59,9 +59,9 @@ You should always use a try .. catch to trap the Unvalidable-
 ```php
 try {
    $value = "";
-   $fv->value($beforeValidate)->required()->validate(); 
+   $v->value($beforeValidate)->required()->validate(); 
 } 
-catch (Unvalidable $fvExp) {
+catch (Unvalidable $vExp) {
    echo $exp->getMessage();
 }
 ```
@@ -85,7 +85,7 @@ The **sanitize()** rule does the following -
 
   ```php
   $string = "<a href='test'>Test</a>";
-  $afterValidate = $fv->value($string)->sanitize()->validate();
+  $afterValidate = $v->value($string)->sanitize()->validate();
   echo $afterValidate; //Test
   ```
 
@@ -93,7 +93,7 @@ The **sanitize()** rule does the following -
 
   ```php
   $beforeValidate = "how\'s going on?";
-  $afterValidate = $fv->value($beforeValidate)->sanitize()->validate();
+  $afterValidate = $v->value($beforeValidate)->sanitize()->validate();
   echo $afterValidate; //how's going on?
   ```
 
@@ -101,7 +101,7 @@ The **sanitize()** rule does the following -
 
   ```php
   $beforeValidate = "<a href='test'>Test</a>";
-  $afterValidate = $fv->value($beforeValidate)->sanitize()->validate();
+  $afterValidate = $v->value($beforeValidate)->sanitize()->validate();
   echo $afterValidate; //&lt;a href='test'&gt;Test&lt;/a&gt;
   ```
 
@@ -142,7 +142,7 @@ However, you can have more control on data sanitization. Instead of **sanitize()
   removeSlash()
       
   $raw = "how\'s going on?";
-  $afterValidate = $fv->value(raw)->removeSlash()->validate();
+  $afterValidate = $v->value(raw)->removeSlash()->validate();
   echo $afterValidate; //how's going on?
   ```
 
@@ -157,19 +157,19 @@ However, you can have more control on data sanitization. Instead of **sanitize()
 
 ```php
   $beforeValidate = "<br> This is a break";
-  $afterValidate = $fv->value($beforeValidate)->convert()->validate();
+  $afterValidate = $v->value($beforeValidate)->convert()->validate();
   echo $afterValidate;  // "&lt;br&gt; This is a break"
   
   $beforeValidate = "\"Double 'Single";
-  $afterValidate = $fv->value($beforeValidate)->convert(true, false)->validate();
+  $afterValidate = $v->value($beforeValidate)->convert(true, false)->validate();
   $afterValidate = "&quot;Double 'Single";
   
   $beforeValidate = "\"Double 'Single";
-  $afterValidate = $fv->value($beforeValidate)->convert(true, true)->validate();
+  $afterValidate = $v->value($beforeValidate)->convert(true, true)->validate();
   $afterValidate = "&quot;Double &#039;Single";    
   
   $beforeValidate = "\"Double 'Single";
-  $afterValidate = $fv->value($beforeValidate)->convert(false, false)->validate();
+  $afterValidate = $v->value($beforeValidate)->convert(false, false)->validate();
   $afterValidate = ""Double 'Single";  
 ````
 
@@ -183,18 +183,18 @@ However, you can have more control on data sanitization. Instead of **sanitize()
   asLetters(bool $allowSpace)
   
   $beforeValidate = "This is a sentence";
-  $afterValidate = $fv->value($beforeValidate)->asLetters(false)->validate(); //Exception : White space not allowed.
+  $afterValidate = $v->value($beforeValidate)->asLetters(false)->validate(); //Exception : White space not allowed.
   
   $beforeValidate = "This_is_a_sentence";
-  $afterValidate = $fv->value($beforeValidate)->asLetters(false)->validate(); //OK
+  $afterValidate = $v->value($beforeValidate)->asLetters(false)->validate(); //OK
   $afterValidate = "This_is_a_sentence"; 
   
   $beforeValidate = "This is a sentence";
-  $afterValidate = $fv->value($beforeValidate)->asLetters(true)->validate();
+  $afterValidate = $v->value($beforeValidate)->asLetters(true)->validate();
   $afterValidate = "This is a sentence"; 
   
   $before = "This is sentence 1";
-  $after = $fv->value($before)->asLetters(true)->validate(); //Exception number not allowed.
+  $after = $v->value($before)->asLetters(true)->validate(); //Exception number not allowed.
   ```
 
   
@@ -203,7 +203,7 @@ However, you can have more control on data sanitization. Instead of **sanitize()
 
   ```php
   $before = "12345A";
-  $after = $fv->value($before)->asNumbers()->validate(); //Exception : Invalid number.
+  $after = $v->value($before)->asNumbers()->validate(); //Exception : Invalid number.
   ```
 
   
@@ -263,7 +263,7 @@ Checks whether the value has the specified length.
 equalLength(integer $length)
 
 $before = "Bangladesh";
-$after = $fv->value($before)->equalLength(5)->validate(); //Exception : Length must be equal to 5 characters.
+$after = $v->value($before)->equalLength(5)->validate(); //Exception : Length must be equal to 5 characters.
 ```
 
 
@@ -277,7 +277,7 @@ Checks whether the value has the specified minimum length.
 minLength(integer $length)
 
 $before = "Bangladesh";
-$after = $fv->value($before)->minLength(20)->validate(); //Exception : Length must be equal to or greater than 20 characters.
+$after = $v->value($before)->minLength(20)->validate(); //Exception : Length must be equal to or greater than 20 characters.
 ```
 
 
@@ -291,7 +291,7 @@ Checks whether the value has the specified maximum length.
 maxLength(integer $length)
 
 $before = "Bangladesh";
-$after = $fv->value($before)->maxLength(2)->validate(); //Exception : Length must be equal to or less than 2 characters.
+$after = $v->value($before)->maxLength(2)->validate(); //Exception : Length must be equal to or less than 2 characters.
 ```
 
 
@@ -307,7 +307,7 @@ Checks whether the value has the specified length.
 equalValue(mixed $value)
 
 $raw = "Bangladesh";
-$validated = $fv->value($before)->equalValue("Bangla")->validate(); //Exception : Must be equal to Bangla.
+$validated = $v->value($before)->equalValue("Bangla")->validate(); //Exception : Must be equal to Bangla.
 ```
 
 
@@ -321,7 +321,7 @@ Checks whether the value has the minimum specified value.
 minValue(mixed $value)
 
 $before = 10;
-$after = $fv->value($before)->minValue(2)->validate(); //Exception : Must be equal to or greater than 10.
+$after = $v->value($before)->minValue(2)->validate(); //Exception : Must be equal to or greater than 10.
 ```
 
 
@@ -336,7 +336,7 @@ maxValue(mixed $value)
 
 $before  = new DateTime("12-12-2021", new DateTimeZone("Asia/Dhaka"));
 $maxDate = new DateTime("12-12-2020", new DateTimeZone("Asia/Dhaka"));
-$after = $fv->value($before)->maxValue($maxDate)->validate(); //Exception : Must be equal to or less than 12-12-2020.
+$after = $v->value($before)->maxValue($maxDate)->validate(); //Exception : Must be equal to or less than 12-12-2020.
 ```
 
 
@@ -346,15 +346,15 @@ $after = $fv->value($before)->maxValue($maxDate)->validate(); //Exception : Must
 You can take parameter directly from HTTP GET/POST request - 
 
 ```php
-$fv->httpGet($fieldName)->validate();  //HTTP GET
-$fv->httpPost($fieldName)->validate(); //HTTP POST
+$v->httpGet($fieldName)->validate();  //HTTP GET
+$v->httpPost($fieldName)->validate(); //HTTP POST
 ```
 
 You can mark the HTTP GET/POST field as required or optional - 
 
 ```php
-$fv->httpPost($fieldName)->validate();         //default is required = true.
-$fv->httpPost($fieldName, false)->validate();  //now it is optional.
+$v->httpPost($fieldName)->validate();         //default is required = true.
+$v->httpPost($fieldName, false)->validate();  //now it is optional.
 ```
 
 if you mark the field as required, then that field name must be present in the **$_POST** or **$_GET** array.  Otherwise, you'll get a **Unvalidable**.
@@ -369,10 +369,10 @@ Let's see an example-
 </form>
 
 <?php
-   $studentName = $fv->httpPost("student_name")->validate();  //OK.
+   $studentName = $v->httpPost("student_name")->validate();  //OK.
 
    //Throws exception, because "age" field does not exist
-   $age = $fv->httpPost("age")->validate();    //FormValidationException      
+   $age = $v->httpPost("age")->validate();    //FormValidationException      
 ?>
 
 ```
@@ -386,10 +386,10 @@ Label is the description of the parameter. Similar to HTML `<label></label>` tag
 ```php
 //FormValidationException 
 //"Student's Age required"
-$age = $fv->label("Student's Age")->httpPost("age")->validate();
+$age = $v->label("Student's Age")->httpPost("age")->validate();
 
 //Now it becomes "Person's Age required"
-$age = $fv->label("Person's Age")->httpPost("age")->validate();
+$age = $v->label("Person's Age")->httpPost("age")->validate();
 
 ```
 
@@ -402,7 +402,7 @@ If the user input is optional, this method is required to set data for database 
 In the example below, there is no "**age**" field in the form. Therefore 0 has been set as default value for **student** database table.
 
 ```php
-$age = $fv->label("Student's Age")->httpPost("age", false)->default(0)->validate();
+$age = $v->label("Student's Age")->httpPost("age", false)->default(0)->validate();
 ```
 
 If the user input is mandatory, no need to use default().
