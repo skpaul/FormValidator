@@ -150,15 +150,15 @@ However, you can have more control on data sanitization. Instead of **sanitize()
 
   Convert special characters to HTML entities. 
 
-  ```php
+```php
   //Syntax
   convert(bool $convertDoubleQuote = true, bool $convertSingleQuote = true)
-  ```
+```
 
   ```php
   $beforeValidate = "<br> This is a break";
   $afterValidate = $fv->value($beforeValidate)->convert()->validate();
-$afterValidate = "&lt;br&gt; This is a break";
+  $afterValidate = "&lt;br&gt; This is a break";
   
   $beforeValidate = "\"Double 'Single";
   $afterValidate = $fv->value($beforeValidate)->convert(true, false)->validate();
@@ -171,9 +171,8 @@ $afterValidate = "&lt;br&gt; This is a break";
   $beforeValidate = "\"Double 'Single";
   $afterValidate = $fv->value($beforeValidate)->convert(false, false)->validate();
   $afterValidate = ""Double 'Single";  
-  ```
-  
-  
+````
+
 
 ### Datatype Rules
 
@@ -195,7 +194,7 @@ $afterValidate = "&lt;br&gt; This is a break";
   $afterValidate = "This is a sentence"; 
   
   $before = "This is sentence 1";
-  $after = $fv->value($before)->asLetters(true)->validate(); //Exception : number not allowed.
+  $after = $fv->value($before)->asLetters(true)->validate(); //Exception number not allowed.
   ```
 
   
