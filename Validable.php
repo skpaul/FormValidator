@@ -1,6 +1,11 @@
 
 <?php 
 
+    /**
+     * Last modified on 18-04-2020
+     */
+
+     
     class Unvalidable extends Exception
     {
     }
@@ -291,8 +296,15 @@
          */
         public function required(){
             $this->required = true;
-            if(!isset($this->valueToValidate) || empty($this->valueToValidate)){
+            $valueToValidate = $this->valueToValidate;
+
+            if(!isset($valueToValidate)){
                 throw new Unvalidable("{$this->label} required.");
+            }
+            else{
+                if($valueToValidate == ""){
+                    throw new Unvalidable("{$this->label} required.");
+                }
             }
             return $this;
         }
@@ -349,6 +361,22 @@
             return $this;
         }
 
+        //allows all
+        public function asString($allowSpace){
+            $this->character_or_digit = "characters";
+            if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
+                if(!$allowSpace){
+                    if($this->_hasWhitespace($this->valueToValidate)){
+                        throw new Unvalidable("{$this->label} can not have blank space.");
+                    }
+                }
+              
+                // if(!ctype_alpha($temp)){
+                //     throw new Unvalidable("{$this->label} must be alphabetic.");
+                // }
+            }
+            return $this;
+        }
 
         /**
          * Checks string for whitespace characters.
@@ -439,22 +467,25 @@
          * 
          * @throws Unvalidable
          */
-        public function asInteger(){
+        public function asInteger($allowNegative){
             $this->character_or_digit = "digits";
-            if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
-                if(!is_numeric($this->valueToValidate)){
-                    throw new Unvalidable("{$this->label} must be numeric.");
-                }
+            $valueToValidate = $this->valueToValidate;
 
-                if($this->valueToValidate > PHP_INT_MAX ){
-                    throw new Unvalidable("{$this->label} must be less than or equal to " . PHP_INT_MAX . ".");
+            if(isset($valueToValidate)){
+                //it allows negative value, but not decimal value.
+                if(filter_var($valueToValidate, FILTER_VALIDATE_INT) === 0 || filter_var($valueToValidate, FILTER_VALIDATE_INT)){
+                    if (!$allowNegative) {
+                        $valueToValidate = intval($valueToValidate);
+                        if ($valueToValidate < 0) {
+                            throw new Unvalidable("{$this->label} invalid.");
+                        }
+                    }
                 }
-
-                if(!is_int(intval($this->valueToValidate))){
+                else{
                     throw new Unvalidable("{$this->label} invalid.");
                 }
 
-                $this->valueToValidate = intval($this->valueToValidate);
+                $this->valueToValidate = $valueToValidate;
             }
             
             return $this;
@@ -466,41 +497,45 @@
          * @return $this
          * @throws Unvalidable
          */
-        public function asFloat(){
+        public function asFloat($allowNegative){
              //check whether has a decimal point.
             //if has a decimal point, then check it with is_float().
             //if no decimal point, then check it with is_int().
             //finally return with floatval.
 
             $this->character_or_digit = "digits";
-            if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
-                if($this->_has_decimal($this->valueToValidate)){
+            $valueToValidate = $this->valueToValidate;
+            if($this->_has_decimal($valueToValidate)){
 
-                    /**
-                        function is_decimal( $val )
-                        {
-                            return is_numeric( $val ) && floor( $val ) != $val;
+                if(filter_var($valueToValidate, FILTER_VALIDATE_FLOAT) === 0 || filter_var($valueToValidate, FILTER_VALIDATE_FLOAT)){
+                    if (!$allowNegative) {
+                        $valueToValidate = floatval($valueToValidate);
+                        if ($valueToValidate < 0) {
+                            throw new Unvalidable("{$this->label} invalid.");
                         }
-                    */
-                    if(!is_numeric($this->valueToValidate)){
-                        throw new Unvalidable("{$this->label} must be numeric.");
                     }
-
-                    // if(!is_float(floatval($this->valueToValidate))){
-                    //     throw new Unvalidable("{$this->label} must be numeric.");
-                    // }
                 }
                 else{
-                    if(!is_numeric($this->valueToValidate)){
-                        throw new Unvalidable("{$this->label} must be numeric.");
-                    }
-                    // if(!is_int(intval($this->valueToValidate))){
-                    //     throw new Unvalidable("{$this->label} must be numeric.");
-                    // }
+                    throw new Unvalidable("{$this->label} invalid.");
                 }
-
-                $this->valueToValidate = floatval($this->valueToValidate);
             }
+            else{
+                if(filter_var($valueToValidate, FILTER_VALIDATE_INT) === 0 || filter_var($valueToValidate, FILTER_VALIDATE_INT)){
+                    if (!$allowNegative) {
+                        $valueToValidate = intval($valueToValidate);
+                        if ($valueToValidate < 0) {
+                            throw new Unvalidable("{$this->label} invalid.");
+                        }
+                    }
+                }
+                else{
+                    throw new Unvalidable("{$this->label} invalid.");
+                }
+            }
+
+
+            $this->valueToValidate = $valueToValidate;
+           
             return $this;
         }
         
@@ -626,7 +661,7 @@
          * Convert the value as datetime object.
          * 
          * @param string $datetimeZone Default is "Asia/Dhaka".
-         * @throws FormatValidationException if the value is invalid.
+         * @throws Unvalidable if the value is invalid.
          * 
          * @return this $this
          */
@@ -637,7 +672,7 @@
                     $valueToValidate = new Datetime($valueToValidate, new DatetimeZone($datetimeZone));
                     $this->valueToValidate = $valueToValidate;
                 } catch (Exception $exp) {
-                    throw new Unvalidable("Invalid date.");
+                    throw new Unvalidable("{$this->label} invalid.");
                 }
                 // if(!$this->_is_date_valid($this->valueToValidate)){
                 //     $msg = "{$this->label} is invalid. It must be a valid date in dd-mm-yyyy format.";
@@ -648,6 +683,34 @@
             return $this;
         }
       
+
+          /**
+         * asBool()
+         * 
+         * Checks whether the value is a valid boolean
+         * Convert the value as boolean.
+         * 
+         * @param string $datetimeZone Default is "Asia/Dhaka".
+         * @throws Unvalidable Exception if the value is invalid.
+         * 
+         * @return this $this
+         */
+        public function asBool(){
+            $valueToValidate = $this->valueToValidate; //make it debug-friendly with xdebug.
+            if(strlen($valueToValidate) > 0){
+                $valueToValidate = filter_var($valueToValidate, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                if ($valueToValidate === NULL) {
+                    throw new Unvalidable("{$this->label} invalid.");
+                }
+                $this->valueToValidate = $valueToValidate;
+            }
+            // if(isset($this->valueToValidate) && !empty($this->valueToValidate)){
+            // }
+            return $this;
+        }
+      
+
+
         private function _is_date_valid($date_string){
             //$date_string = '23-11-2010';
 
@@ -762,13 +825,21 @@
          * @throws Unvalidable
          */
         public function minValue($minimumValue){   
-            if(!empty($this->valueToValidate)){
+            $valueToValidate = $this->valueToValidate;
+
+            //NOTE: Don't use empty() for numeric value. It treats 0 as empty.
+            // if(!empty($valueToValidate)){
+               
+            // }
+
+            if(strlen($valueToValidate)>0){
                 $label = $this->label;
-                if($this->valueToValidate < $minimumValue){
+                if($valueToValidate < $minimumValue){
                     $msg = "$label must be equal to or greater than $minimumValue.";
                     throw new Unvalidable($msg);
                 }
             }
+          
            
             return $this;
         }
@@ -784,9 +855,15 @@
          * @throws Unvalidable
          */
         public function maxValue($maximumValue){ 
-            if(!empty($this->valueToValidate)){
+            $valueToValidate = $this->valueToValidate;
+
+            //NOTE: Don't use empty() for numeric value. It treats 0 as empty.
+            // if(!empty($valueToValidate)){
+            // }
+
+            if(strlen($valueToValidate) > 0){
                 $label = $this->label;
-                if($this->valueToValidate > $maximumValue){
+                if($valueToValidate > $maximumValue){
                     $msg = "$label must be equal to or less than $maximumValue.";
                     throw new Unvalidable($msg);
                 }
@@ -838,13 +915,19 @@
          * @return mix $valueToValidate Value or default value.
          */
         public function validate(){
-            if(!isset($this->valueToValidate) || empty($this->valueToValidate)){
-                $this->valueToValidate = $this->defaultValue;
-            }
+            $valueToValidate = $this->valueToValidate;
           
-            $temp = $this->valueToValidate;
+            if(!isset($valueToValidate)){
+                $valueToValidate = $this->defaultValue;
+            }
+            else{
+                if($valueToValidate == ""){
+                    $valueToValidate = $this->defaultValue;
+                }
+            }
+
             $this->_reset_private_variables();
-            return $temp;
+            return $valueToValidate;
         }
 
                 
